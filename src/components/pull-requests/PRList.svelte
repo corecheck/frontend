@@ -1,18 +1,9 @@
 <script>
     import { createEventDispatcher } from "svelte";
-    import ApiClient from "@/utils/ApiClient";
     import CommonHelper from "@/utils/CommonHelper";
     import SortHeader from "@/components/base/SortHeader.svelte";
     import FormattedDate from "@/components/base/FormattedDate.svelte";
     import HorizontalScroller from "@/components/base/HorizontalScroller.svelte";
-
-    const dispatch = createEventDispatcher();
-    const labelMethodClass = {
-        get: "label-info",
-        post: "label-success",
-        patch: "label-warning",
-        delete: "label-danger",
-    };
 
     export let filter = "";
     export let presets = "";
@@ -34,45 +25,18 @@
     export async function load(page = 1, breakTasks = true) {
         isLoading = true;
 
-        return ApiClient.logs
-            .getRequestsList(page, 30, {
-                sort: sort,
-                filter: [presets, filter].filter(Boolean).join("&&"),
-            })
-            .then(async (result) => {
-                if (page <= 1) {
-                    clearList();
-                }
-
-                isLoading = false;
-                currentPage = result.page;
-                totalItems = result.totalItems;
-                dispatch("load", items.concat(result.items));
-
-                // optimize the items listing by rendering the rows in task batches
-                if (breakTasks) {
-                    const currentYieldId = ++yieldedItemsId;
-                    while (result.items.length) {
-                        if (yieldedItemsId != currentYieldId) {
-                            break; // new yeild has been started
-                        }
-
-                        items = items.concat(result.items.splice(0, 10));
-
-                        await CommonHelper.yieldToMain();
-                    }
-                } else {
-                    items = items.concat(result.items);
-                }
+        fetch("https://api.github.com/repos/bitcoin/bitcoin/pulls?page=" + page)
+            .then((res) => res.json())
+            .then((res) => {
+                items = [...items, ...res];
+                currentPage = page;
+                totalItems = res.length;
             })
             .catch((err) => {
-                if (!err?.isAbort) {
-                    isLoading = false;
-                    console.warn(err);
-                    clearList();
-                    ApiClient.error(err, false);
-                }
+                console.error(err);
             });
+
+        isLoading = false;
     }
 
     function clearList() {
@@ -86,45 +50,55 @@
     <table class="table" class:table-loading={isLoading}>
         <thead>
             <tr>
-                <SortHeader disable class="col-field-method" name="method" bind:sort>
-                    <div class="col-header-content">
-                        <i class="ri-global-line" />
-                        <span class="txt">Method</span>
-                    </div>
-                </SortHeader>
-
-                <SortHeader disable class="col-type-text col-field-url" name="url" bind:sort>
-                    <div class="col-header-content">
-                        <i class={CommonHelper.getFieldTypeIcon("url")} />
-                        <span class="txt">URL</span>
-                    </div>
-                </SortHeader>
-
-                <SortHeader disable class="col-type-text col-field-referer" name="referer" bind:sort>
-                    <div class="col-header-content">
-                        <i class={CommonHelper.getFieldTypeIcon("url")} />
-                        <span class="txt">Referer</span>
-                    </div>
-                </SortHeader>
-
-                <SortHeader disable class="col-type-number col-field-userIp" name="userIp" bind:sort>
-                    <div class="col-header-content">
-                        <i class={CommonHelper.getFieldTypeIcon("number")} />
-                        <span class="txt">User IP</span>
-                    </div>
-                </SortHeader>
-
                 <SortHeader disable class="col-type-number col-field-status" name="status" bind:sort>
                     <div class="col-header-content">
-                        <i class={CommonHelper.getFieldTypeIcon("number")} />
+                        <i class={CommonHelper.getFieldTypeIcon("status")} />
                         <span class="txt">Status</span>
                     </div>
                 </SortHeader>
+                <SortHeader disable class="col-type-number col-field-number" name="number" bind:sort>
+                    <div class="col-header-content">
+                        <i class={CommonHelper.getFieldTypeIcon("number")} />
+                        <span class="txt">Number</span>
+                    </div>
+                </SortHeader>
+                <SortHeader class="col-type-text col-field-url" name="title" bind:sort>
+                    <div class="col-header-content">
+                        <i class={CommonHelper.getFieldTypeIcon("text")} />
+                        <span class="txt">Title</span>
+                    </div>
+                </SortHeader>
+                <SortHeader disable class="col-field-author" name="author" bind:sort>
+                    <div class="col-header-content">
+                        <i class="ri-global-line" />
+                        <span class="txt">Author</span>
+                    </div>
+                </SortHeader>
+
+                <SortHeader disable class="col-type-number col-field-number" name="number" bind:sort>
+                    <div class="col-header-content">
+                        <i class={CommonHelper.getFieldTypeIcon("number")} />
+                        <span class="txt">Coverage score</span>
+                    </div>
+                </SortHeader>
+                <SortHeader disable class="col-type-number col-field-number" name="number" bind:sort>
+                    <div class="col-header-content">
+                        <i class={CommonHelper.getFieldTypeIcon("number")} />
+                        <span class="txt">Mutation score</span>
+                    </div>
+                </SortHeader>
+
 
                 <SortHeader disable class="col-type-date col-field-created" name="created" bind:sort>
                     <div class="col-header-content">
                         <i class={CommonHelper.getFieldTypeIcon("date")} />
                         <span class="txt">Created</span>
+                    </div>
+                </SortHeader>
+                <SortHeader disable class="col-type-date col-field-updated" name="created" bind:sort>
+                    <div class="col-header-content">
+                        <i class={CommonHelper.getFieldTypeIcon("date")} />
+                        <span class="txt">Updated</span>
                     </div>
                 </SortHeader>
 
@@ -136,49 +110,46 @@
                 <tr
                     tabindex="0"
                     class="row-handle"
-                    on:click={() => dispatch("select", item)}
-                    on:keydown={(e) => {
-                        if (e.code === "Enter") {
-                            e.preventDefault();
-                            dispatch("select", item);
-                        }
-                    }}
+                    on:click={() => window.open("/pull-requests/" + item.number, "_blank")}
                 >
                     <td class="col-type-text col-field-method min-width">
-                        <span class="label txt-uppercase {labelMethodClass[item.method.toLowerCase()]}">
-                            {item.method?.toUpperCase()}
+                        <span class="label" class:label-danger={item.state === "closed"} class:label-success={item.state === "open"}>
+                            {item.state}
                         </span>
                     </td>
-
-                    <td class="col-type-text col-field-url">
-                        <span class="txt txt-ellipsis" title={item.url}>
-                            {item.url}
-                        </span>
-                        {#if item.meta?.errorMessage || item.meta?.errorData}
-                            <i class="ri-error-warning-line txt-danger m-l-5 m-r-5" title="Error" />
-                        {/if}
-                    </td>
-
-                    <td class="col-type-text col-field-referer">
-                        <span class="txt txt-ellipsis" class:txt-hint={!item.referer} title={item.referer}>
-                            {item.referer || "N/A"}
-                        </span>
-                    </td>
-
-                    <td class="col-type-number col-field-userIp">
-                        <span class="txt txt-ellipsis" class:txt-hint={!item.userIp} title={item.userIp}>
-                            {item.userIp || "N/A"}
-                        </span>
-                    </td>
-
-                    <td class="col-type-number col-field-status">
+                    <td class="col-type-number col-field-number min-width">
                         <span class="label" class:label-danger={item.status >= 400}>
-                            {item.status}
+                            {item.number}
+                        </span>
+                    </td>
+                    <td class="col-type-text col-field-url">
+                        <span class="txt txt-ellipsis" title={item.title}>
+                            {item.title}
+                        </span>
+                    </td>
+
+                    <td class="col-type-text col-field-method">
+                        <span class="label">
+                            {item.user.login}
+                        </span>
+                    </td>
+                    
+                    <td class="col-type-number col-field-number min-width">
+                        <span class="label" class:label-success={true}>
+                            86%
+                        </span>
+                    </td>
+                    <td class="col-type-number col-field-number min-width">
+                        <span class="label" class:label-danger={true}>
+                            30%
                         </span>
                     </td>
 
                     <td class="col-type-date col-field-created">
-                        <FormattedDate date={item.created} />
+                        <FormattedDate date={item.created_at} />
+                    </td>
+                    <td class="col-type-date col-field-created">
+                        <FormattedDate date={item.updated_at} />
                     </td>
 
                     <td class="col-type-action min-width">

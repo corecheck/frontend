@@ -1,7 +1,6 @@
 <script>
     import { createEventDispatcher, onMount } from "svelte";
     import { fly } from "svelte/transition";
-    import { Collection } from "pocketbase";
     import CommonHelper from "@/utils/CommonHelper";
 
     const dispatch = createEventDispatcher();
@@ -9,13 +8,6 @@
 
     export let value = "";
     export let placeholder = 'Search term or filter like created > "2022-01-01"...';
-
-    // autocomplete filter component fields
-    export let autocompleteCollection = new Collection();
-    export let extraAutocompleteKeys = [];
-
-    let filterComponent;
-    let isFilterComponentLoading = false;
 
     let searchInput;
     let tempValue = "";
@@ -36,22 +28,6 @@
         value = tempValue;
         dispatch("submit", value);
     }
-
-    async function loadFilterComponent() {
-        if (filterComponent || isFilterComponentLoading) {
-            return; // already loaded or in the process
-        }
-
-        isFilterComponentLoading = true;
-
-        filterComponent = (await import("@/components/base/FilterAutocompleteInput.svelte")).default;
-
-        isFilterComponentLoading = false;
-    }
-
-    onMount(() => {
-        loadFilterComponent();
-    });
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -60,28 +36,13 @@
         <i class="ri-search-line" />
     </label>
 
-    {#if filterComponent && !isFilterComponentLoading}
-        <svelte:component
-            this={filterComponent}
-            id={uniqueId}
-            singleLine
-            disableRequestKeys
-            disableIndirectCollectionsKeys
-            {extraAutocompleteKeys}
-            baseCollection={autocompleteCollection}
-            placeholder={value || placeholder}
-            bind:value={tempValue}
-            on:submit={submit}
-        />
-    {:else}
-        <input
-            bind:this={searchInput}
-            type="text"
-            id={uniqueId}
-            placeholder={value || placeholder}
-            bind:value={tempValue}
-        />
-    {/if}
+    <input
+        bind:this={searchInput}
+        type="text"
+        id={uniqueId}
+        placeholder={value || placeholder}
+        bind:value={tempValue}
+    />
 
     {#if (value.length || tempValue.length) && tempValue != value}
         <button

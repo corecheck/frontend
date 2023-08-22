@@ -11,7 +11,7 @@ import '../scss/main.scss'
         <a href="/" class="logo logo-sm">
             <img
                 src="{import.meta.env.BASE_URL}images/logo.png"
-                alt="PocketBase logo"
+                alt="Bitcoin Core Coverage"
                 width="40"
                 height="40"
             />
@@ -22,7 +22,7 @@ import '../scss/main.scss'
                 href="/pull-requests"
                 class="menu-item"
                 aria-label="Pull requests"
-				class:active="{$page.url.pathname === "/pull-requests"}"
+				class:active="{$page.url.pathname.startsWith("/pull-requests")}"
 				use:tooltip={{ text: "Pull requests", position: "right" }}
             >
 				<img style="text-align: center" height="25" alt="pr" src="/icons/svg/pull-request.svg" />
