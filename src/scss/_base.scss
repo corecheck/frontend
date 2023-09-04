@@ -390,6 +390,13 @@ a,
 .flex-nowrap {
     flex-wrap: nowrap !important;
 }
+.flex-justify-between {
+    justify-content: space-between !important;
+}
+.flex-align-start {
+    align-items: flex-start !important;
+}
+
 .inline-flex {
     position: relative;
     display: inline-flex;

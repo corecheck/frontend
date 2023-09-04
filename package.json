@@ -22,5 +22,9 @@
 		"typescript": "^5.0.0",
 		"vite": "^4.4.2"
 	},
-	"type": "module"
+	"type": "module",
+	"dependencies": {
+		"dayjs": "^1.11.9",
+		"svelte-highlight": "^7.3.0"
+	}
 }

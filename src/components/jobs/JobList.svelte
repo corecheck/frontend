@@ -4,6 +4,7 @@
     import SortHeader from "@/components/base/SortHeader.svelte";
     import FormattedDate from "@/components/base/FormattedDate.svelte";
     import HorizontalScroller from "@/components/base/HorizontalScroller.svelte";
+    import dayjs from "dayjs";
 
     export let sort = "-rowid";
     export let jobs;
@@ -50,25 +51,6 @@
                         <span class="txt">Started at</span>
                     </div>
                 </SortHeader>
-                <SortHeader disable class="col-type-date col-field-finished min-width" name="finished" bind:sort>
-                    <div class="col-header-content">
-                        <i class={CommonHelper.getFieldTypeIcon("date")} />
-                        <span class="txt">Finished at</span>
-                    </div>
-                </SortHeader>
-                <SortHeader disable class="col-type-date col-field-canceled min-width" name="canceled" bind:sort>
-                    <div class="col-header-content">
-                        <i class={CommonHelper.getFieldTypeIcon("date")} />
-                        <span class="txt">Canceled at</span>
-                    </div>
-                </SortHeader>
-                <SortHeader disable class="col-type-date col-field-healthcheck min-width" name="healthcheck" bind:sort>
-                    <div class="col-header-content">
-                        <i class={CommonHelper.getFieldTypeIcon("date")} />
-                        <span class="txt">Last health check</span>
-                    </div>
-                </SortHeader>
-
                 <th class="col-type-action min-width" />
             </tr>
         </thead>
@@ -95,24 +77,19 @@
                     </td>
                     <td class="col-type-text col-field-status">
                         <span class="txt txt-ellipsis" title={item.stat}>
-                            {item.status}
+                            {item.aws_status}
                         </span>
                     </td>
 
                     <td class="col-type-date col-field-created">
-                        <FormattedDate date={item.created_at} />
+                        <span class="txt txt-ellipsis" title={item.created_at}>
+                            {dayjs(item.created_at).format("YYYY-MM-DD HH:mm:ss")}
+                        </span>
                     </td>
                     <td class="col-type-date col-field-started">
-                        <FormattedDate date={item.started_at} />
-                    </td>
-                    <td class="col-type-date col-field-started">
-                        <FormattedDate date={item.finished_at} />
-                    </td>
-                    <td class="col-type-date col-field-started">
-                        <FormattedDate date={item.canceled_at} />
-                    </td>
-                    <td class="col-type-date col-field-started">
-                        <FormattedDate date={item.last_health_check} />
+                        <span class="txt txt-ellipsis" title={item.started_at}>
+                            {dayjs(item.started_at).format("YYYY-MM-DD HH:mm:ss")}
+                        </span>
                     </td>
                 </tr>
             {:else}
