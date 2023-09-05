@@ -6,11 +6,13 @@
 
     const pageTitle = "Pull requests";
 
+    export let data;
+    let { pulls } = data;
+
     let refreshKey = 1;
     function refresh() {
         refreshKey++;
     }
-
 </script>
 
 <div class="page-wrapper">
@@ -31,7 +33,7 @@
         </div>
 
         {#key refreshKey}
-            <PRList />
+            <PRList items={pulls} />
         {/key}
     </main>
 </div>

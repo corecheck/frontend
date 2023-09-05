@@ -9,41 +9,10 @@
     export let presets = "";
     export let sort = "-rowid";
 
-    let items = [];
+    export let items = [];
     let currentPage = 1;
     let totalItems = 0;
     let isLoading = false;
-    let yieldedItemsId = 0;
-
-    $: if (typeof sort !== "undefined" || typeof filter !== "undefined" || typeof presets !== "undefined") {
-        clearList();
-        load(1);
-    }
-
-    $: canLoadMore = totalItems > items.length;
-
-    export async function load(page = 1, breakTasks = true) {
-        isLoading = true;
-
-        fetch("https://api.github.com/repos/bitcoin/bitcoin/pulls?page=" + page)
-            .then((res) => res.json())
-            .then((res) => {
-                items = [...items, ...res];
-                currentPage = page;
-                totalItems = res.length;
-            })
-            .catch((err) => {
-                console.error(err);
-            });
-
-        isLoading = false;
-    }
-
-    function clearList() {
-        items = [];
-        currentPage = 1;
-        totalItems = 0;
-    }
 </script>
 
 <HorizontalScroller class="table-wrapper">
@@ -106,7 +75,7 @@
             </tr>
         </thead>
         <tbody>
-            {#each items as item (item.id)}
+            {#each items as item}
                 <tr
                     tabindex="0"
                     class="row-handle"
@@ -130,7 +99,7 @@
 
                     <td class="col-type-text col-field-method">
                         <span class="label">
-                            {item.user.login}
+                            {item.user}
                         </span>
                     </td>
                     
@@ -183,21 +152,3 @@
         </tbody>
     </table>
 </HorizontalScroller>
-
-{#if items.length}
-    <small class="block txt-hint txt-right m-t-sm">Showing {items.length} of {totalItems}</small>
-{/if}
-
-{#if items.length && canLoadMore}
-    <div class="block txt-center m-t-xs">
-        <button
-            type="button"
-            class="btn btn-lg btn-secondary btn-expanded"
-            class:btn-loading={isLoading}
-            class:btn-disabled={isLoading}
-            on:click={() => load(currentPage + 1)}
-        >
-            <span class="txt">Load more ({totalItems - items.length})</span>
-        </button>
-    </div>
-{/if}

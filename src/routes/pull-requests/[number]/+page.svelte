@@ -10,7 +10,6 @@
     const pageTitle = "Pull requests";
     export let data;
     let { pr, coverage, mutations } = data;
-    console.log("coverage", coverage);
 
     function startCoverage() {
         fetch("http://localhost:1323/pr/" + $page.params.number + "/analyze", {
@@ -87,6 +86,14 @@
                 return "'||' to '&&'";
             case "mutator-and-to-or":
                 return "'&&' to '||'";
+            case "mutator-greater-to-less":
+                return "'>' to '<'";
+            case "mutator-less-to-greater":
+                return "'<' to '>'";
+            case "mutator-eq-to-neq":
+                return "'==' to '!='";
+            case "mutator-neq-to-eq":
+                return "'!=' to '=='";
         }
 
         return "Unknown";
@@ -108,7 +115,7 @@
                 <div class="flex-fill" />
             </header>
             <h1>
-                <a href={pr.html_url} target="_blank">
+                <a href={"https://github.com/bitcoin/bitcoin/pull/" + pr.number} target="_blank">
                     {pr.title}
                 </a>
             </h1>
@@ -229,7 +236,7 @@
                     {/key}
                 </div>
             {/if}
-            {#if mutations !== null}
+            {#if pr.has_generated_mutations}
                 <div style="width: 48%">
                     <div class="flex">
                         <h1>Surviving mutants</h1>
@@ -255,7 +262,7 @@
                     </div>
                     <div class="clearfix m-b-base" />
                     {#key mutations}
-                        {#if mutations?.length === 0}
+                        {#if mutations?.length === 0 && pr.has_generated_mutations}
                             <div
                                 class="alert alert-success"
                                 style="text-align: center"
