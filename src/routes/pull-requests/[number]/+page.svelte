@@ -271,7 +271,7 @@
                             </div>
                         {/if}
                         <div class="accordions mutations">
-                            {#each mutations.slice(0, 7) as mutation}
+                            {#each mutations as mutation}
                                 <Accordion>
                                     <svelte:fragment slot="header">
                                         <div class="inline-flex">
