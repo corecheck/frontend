@@ -130,6 +130,19 @@
                 console.error(err);
             });
     }
+
+    function getLineTooltip(line) {
+        if (!line.testable) return "Not testable";
+        if (line.covered) {
+            if (line.changed) return "Covered and changed";
+
+            return "Covered and unchanged";
+        }
+
+        if (line.changed) return "Uncovered and changed";
+        return "Uncovered and unchanged";
+    }
+
 </script>
 
 <svelte:head>
@@ -192,12 +205,11 @@
             {#if coverage !== null}
                 <div style="width: 48%">
                     <div class="flex">
-                        <!-- display coverage score -->
                         <h1>Coverage data</h1> 
                         <span class="label" class:label-success={pr.coverage_ratio >= 0.8}
                             class:label-warning={pr.coverage_ratio > 0.5 && pr.coverage_ratio < 0.8}
                             class:label-danger={pr.coverage_ratio < 0.5}
-                            >{pr.coverage_ratio.toFixed(2) * 100}%</span>
+                            >{(pr.coverage_ratio * 100).toFixed(2)}%</span>
                         {#if hasExpanded["coverage"]}
                             <button
                                 type="button"
@@ -270,11 +282,21 @@
                                                             href={`https://github.com/${pr.head_repo}/blob/${pr.head}/${file.name}#L${line.line_number}`}
                                                             class="line-number link-primary txt-mono"
                                                             >{line.line_number} </a><span
-                                                            class:line-covered={line.covered &&
+                                                            use:tooltip={{
+                                                                text: getLineTooltip(line),
+                                                                position: "top",
+                                                            }}  
+                                                            class:line-changed-covered={line.covered &&
                                                                 line.changed &&
                                                                 line.testable}
-                                                            class:line-uncovered={!line.covered &&
+                                                            class:line-unchanged-covered={line.covered &&
+                                                                !line.changed &&
+                                                                line.testable}
+                                                            class:line-changed-uncovered={!line.covered &&
                                                                 line.changed &&
+                                                                line.testable}
+                                                            class:line-unchanged-uncovered={!line.covered &&
+                                                                !line.changed &&
                                                                 line.testable}
                                                             class="txt-mono"
                                                             >{line.line}</span
@@ -286,14 +308,18 @@
                     {/key}
                 </div>
             {/if}
-            {#if pr.has_generated_mutations}
+            {#if pr.is_done_mutating}
                 <div style="width: 48%">
                     <div class="flex">
-                        <h1>Surviving mutants</h1>
+                        <h1>Mutation testing</h1>
                         <span class="label" class:label-success={pr.mutation_ratio >= 0.8}
                             class:label-warning={pr.mutation_ratio > 0.5 && pr.mutation_ratio < 0.8}
                             class:label-danger={pr.mutation_ratio < 0.5}
-                            >{pr.mutation_ratio.toFixed(2) * 100}%</span>
+                            use:tooltip={{
+                                text: `${(pr.mutation_ratio * 100).toFixed(2)}% of generated mutations where killed`,
+                                position: "top",
+                            }}
+                            >{(pr.mutation_ratio * 100).toFixed(2)}%</span>
                         {#if hasExpanded["mutations"]}
                             <button
                                 type="button"
@@ -416,12 +442,20 @@
         display: flex;
         align-items: center;
 
-        .line-covered {
-            background-color: #a6f2b8;
+        .line-changed-covered {
+            background-color: #66ee86;
         }
 
-        .line-uncovered {
-            background-color: #efb2b2;
+        .line-changed-uncovered {
+            background-color: #e97373;
+        }
+
+        .line-unchanged-covered {
+            background-color: #bbf1c8;
+        }
+
+        .line-unchanged-uncovered {
+            background-color: #f1c7c7;
         }
     }
     .line-number {
