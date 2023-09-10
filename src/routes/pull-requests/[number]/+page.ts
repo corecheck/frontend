@@ -12,7 +12,11 @@ export async function _fetchCoverage(number: number, full: boolean) {
 }
 
 export async function _fetchMutations(number: number) {
-    return fetch(`http://localhost:1323/pr/${number}/mutations`)
+    return fetch(`http://localhost:1323/pr/${number}/mutations`, {
+        method: "GET",
+        credentials: "include",
+        withCredentials: true,
+    })
         .then(res => {
             if (res.status === 200) {
                 return res.json();
@@ -31,9 +35,20 @@ export async function load({ params }) {
             console.error(err);
         });
 
+    const mutations = await _fetchMutations(params.number);
+    let votes: Record<string, string> = {}; 
+    if (mutations) {
+        for (const mutation of mutations) {
+            if (mutation.vote) {
+                votes[mutation.id] = mutation.vote;
+            }
+        }
+    }
+
     return {
         pr,
         coverage: await _fetchCoverage(params.number, false),
-        mutations: await _fetchMutations(params.number),
+        mutations: mutations || [],
+        votes: votes,
     };
 }

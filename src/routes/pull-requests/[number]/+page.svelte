@@ -1,15 +1,16 @@
 <script lang="ts">
     import { page } from "$app/stores";
-    import { _fetchCoverage } from "./+page";
+    import { _fetchCoverage, _fetchMutations } from "./+page";
     import Accordion from "../../../components/base/Accordion.svelte";
     import Field from "../../../components/base/Field.svelte";
     import JobList from "../../../components/jobs/JobList.svelte";
     import Highlight from "svelte-highlight";
     import diffLanguage, { diff } from "svelte-highlight/languages/diff";
     import github from "svelte-highlight/styles/github";
+    import tooltip from "../../../actions/tooltip";
     const pageTitle = "Pull requests";
     export let data;
-    let { pr, coverage, mutations } = data;
+    let { pr, coverage, mutations, votes } = data;
 
     function startCoverage() {
         fetch("http://localhost:1323/pr/" + $page.params.number + "/analyze", {
@@ -98,10 +99,41 @@
 
         return "Unknown";
     }
+
+    function isOutdated() {
+        return pr.coverage_commit !== pr.head;
+    }
+
+    function voteForMutation(id, vote) {
+        if (votes[id] === vote) {
+            vote = "none";
+        }
+        fetch(
+            "http://localhost:1323/pr/" + $page.params.number + "/mutation/" + id + "/vote",
+            {
+                method: "PUT",
+                body: JSON.stringify({
+                    vote,
+                }),
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                withCredentials: true,
+                credentials: "include",
+            }
+        )
+            .then((res) => {
+                console.log(res);
+                votes[id] = vote;
+            })
+            .catch((err) => {
+                console.error(err);
+            });
+    }
 </script>
 
 <svelte:head>
-  {@html github}
+    {@html github}
 </svelte:head>
 
 <div class="page-wrapper">
@@ -114,8 +146,16 @@
                 </nav>
                 <div class="flex-fill" />
             </header>
-            <h1>
-                <a href={"https://github.com/bitcoin/bitcoin/pull/" + pr.number} target="_blank">
+            <h1 class="flex">
+                <a
+                    href={"https://github.com/bitcoin/bitcoin/pull/" +
+                        pr.number}
+                    target="_blank"
+                    use:tooltip={{
+                        text: pr.head.substr(0, 7),
+                        position: "right",
+                    }}
+                >
                     {pr.title}
                 </a>
             </h1>
@@ -128,10 +168,15 @@
                 </div>
             {/if}
 
-            {#if !hasRunningJob() && !hasCoverage()}
+            {#if !hasRunningJob() && (!hasCoverage() || isOutdated())}
                 <div class="alert alert-info" style="text-align: center">
-                    <i class="ri-information-line" /> No coverage data available
-                    for this PR.
+                    {#if isOutdated()}
+                        <i class="ri-information-line" /> Coverage data is out of
+                        date. Please re-run the coverage analysis.
+                    {:else}
+                        <i class="ri-information-line" /> No coverage data available
+                        for this PR.
+                    {/if}
                     <button
                         type="button"
                         class="btn btn-primary"
@@ -147,7 +192,12 @@
             {#if coverage !== null}
                 <div style="width: 48%">
                     <div class="flex">
-                        <h1>Coverage data</h1>
+                        <!-- display coverage score -->
+                        <h1>Coverage data</h1> 
+                        <span class="label" class:label-success={pr.coverage_ratio >= 0.8}
+                            class:label-warning={pr.coverage_ratio > 0.5 && pr.coverage_ratio < 0.8}
+                            class:label-danger={pr.coverage_ratio < 0.5}
+                            >{pr.coverage_ratio.toFixed(2) * 100}%</span>
                         {#if hasExpanded["coverage"]}
                             <button
                                 type="button"
@@ -240,6 +290,10 @@
                 <div style="width: 48%">
                     <div class="flex">
                         <h1>Surviving mutants</h1>
+                        <span class="label" class:label-success={pr.mutation_ratio >= 0.8}
+                            class:label-warning={pr.mutation_ratio > 0.5 && pr.mutation_ratio < 0.8}
+                            class:label-danger={pr.mutation_ratio < 0.5}
+                            >{pr.mutation_ratio.toFixed(2) * 100}%</span>
                         {#if hasExpanded["mutations"]}
                             <button
                                 type="button"
@@ -293,13 +347,52 @@
                                             >{mutation.mutator}</span
                                         >
                                     </svelte:fragment>
-                                    <Highlight language={diff} code={mutation.diff} />
-                                    <p class="text-hint">
-                                        Apply this patch to your code with <code
-                                            >patch -p0 {"<"} patch.diff</code
-                                        >.
-                                    </p>
-                                </Accordion>
+                                    <div class="form-field">
+                                        <Highlight
+                                            language={diff}
+                                            code={mutation.diff}
+                                        />
+                                        <div class="help-block m-0">
+                                            Apply this patch to your code with <code
+                                                >patch -p0 {"<"} patch.diff</code
+                                            >.
+                                        </div>
+                                    </div>
+
+                                    <!-- vote for mutation, good or not -->
+                                    {#key mutation.vote}
+                                    <div class="form-field m-0">
+                                        <button
+                                            type="button"
+                                            class="btn btn-sm"
+                                            class:btn-primary={votes[mutation.id] === "must_fix"}
+                                            class:btn-secondary={votes[mutation.id] !== "must_fix"}
+                                            use:tooltip={{
+                                                text: "This mutation should be fixed",
+                                                position: "top",
+                                            }}
+                                            on:click={() => voteForMutation(mutation.id, "must_fix")}
+                                        >
+                                            <i class="ri-thumb-up-line" />
+                                            Must fix 
+                                        </button>
+                                        <button
+                                            type="button"
+                                            class="btn btn-sm"
+                                            class:btn-primary={votes[mutation.id] === "ignore"}
+                                            class:btn-secondary={votes[mutation.id] !== "ignore"}
+                                            use:tooltip={{
+                                                text: "This mutation is not relevant for this PR",
+                                                position: "top",
+                                            }}
+                                            on:click={() => voteForMutation(mutation.id, "ignore")}>
+                                            <i class="ri-thumb-down-line" />
+                                            Ignore
+                                        </button>
+                                    </div>
+                                    {/key}
+                                    </Accordion
+                                >
                             {/each}
                         </div>
                     {/key}
@@ -307,10 +400,6 @@
             {/if}
         </div>
         <div class="clearfix m-b-base" />
-
-        <!-- separator -->
-        <h2>Jobs</h2>
-        <JobList jobs={pr.jobs?.sort((a, b) => b.id - a.id) || []} />
     </main>
 </div>
 

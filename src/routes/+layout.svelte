@@ -74,7 +74,7 @@
                 aria-label="Sign in with GitHub"
                 use:tooltip={{ text: "Sign in with GitHub", position: "right" }}
             >
-                <i style="font-size: 45px" class="ri-github-fill" />
+                <i style="font-size: 50px; margin-bottom: 10px" class="ri-github-fill" />
             </a>
         {/if}
         {/key}

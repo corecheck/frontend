@@ -104,13 +104,13 @@
                     </td>
                     
                     <td class="col-type-number col-field-number min-width">
-                        <span class="label" class:label-success={true}>
-                            86%
+                        <span class="label" class:label-success={item.coverage_ratio >= 0.8} class:label-warning={item.coverage_ratio >= 0.6 && item.coverage_ratio < 0.8} class:label-danger={item.has_coverage && item.coverage_ratio < 0.6}>
+                            {item.has_coverage ? Math.round(item.coverage_ratio * 100) + '%' : "N/A"}
                         </span>
                     </td>
                     <td class="col-type-number col-field-number min-width">
-                        <span class="label" class:label-danger={true}>
-                            30%
+                        <span class="label" class:label-success={item.mutation_ratio >= 0.8} class:label-warning={item.mutation_ratio >= 0.6 && item.mutation_ratio < 0.8} class:label-danger={item.has_mutation && item.mutation_ratio < 0.6}>
+                            {item.mutation_ratio >= 0.8 ? Math.round(item.mutation_ratio * 100) + '%' : "N/A"}
                         </span>
                     </td>
 
