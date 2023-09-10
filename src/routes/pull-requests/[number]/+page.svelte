@@ -32,10 +32,6 @@
         );
     }
 
-    function hasCoverage() {
-        return pr.jobs?.some((job) => job.aws_status === "SUCCEEDED");
-    }
-
     let hasExpanded = {
         coverage: false,
         mutations: false,
@@ -172,7 +168,8 @@
                     {pr.title}
                 </a>
 
-                <span class="label" class:label-warning={isOutdated()}
+                {#if pr.has_coverage}
+                <span class="label" class:label-warning={isOutdated()} class:label-success={!isOutdated()}
                     use:tooltip={{
                         text: isOutdated()
                             ? "Coverage data is out of date"
@@ -180,6 +177,7 @@
                         position: "top",
                     }}
                     >{isOutdated() ? "Outdated coverage" : "Up to date"}</span>
+                {/if}
             </h1>
 
             <div class="clearfix m-b-base" />
@@ -190,9 +188,9 @@
                 </div>
             {/if}
 
-            {#if !hasRunningJob() && (!hasCoverage() || isOutdated())}
+            {#if !hasRunningJob() && (!pr.has_coverage || isOutdated())}
                 <div class="alert alert-info" style="text-align: center">
-                    {#if isOutdated()}
+                    {#if pr.has_coverage && isOutdated()}
                         <i class="ri-information-line" /> Coverage data is out of
                         date. Please re-run the coverage analysis.
                     {:else}
@@ -387,7 +385,9 @@
                                             language={diff}
                                             code={mutation.diff}
                                         />
-                                        <div class="help-block m-0">
+                                        
+                                        <a href={`https://github.com/${pr.head_repo}/blob/${pr.head}/${mutation.file}#L${mutation.line}`} target="_blank"
+                                        class="context-button btn btn-secondary btn-sm">Open context</a><div class="help-block m-0">
                                             Apply this patch to your code with <code
                                                 >patch -p0 {"<"} patch.diff</code
                                             >.
@@ -399,7 +399,7 @@
                                     <div class="form-field m-0">
                                         <button
                                             type="button"
-                                            class="btn btn-sm"
+                                            class="btn"
                                             class:btn-primary={votes[mutation.id] === "must_fix"}
                                             class:btn-secondary={votes[mutation.id] !== "must_fix"}
                                             use:tooltip={{
@@ -413,7 +413,7 @@
                                         </button>
                                         <button
                                             type="button"
-                                            class="btn btn-sm"
+                                            class="btn"
                                             class:btn-primary={votes[mutation.id] === "ignore"}
                                             class:btn-secondary={votes[mutation.id] !== "ignore"}
                                             use:tooltip={{
@@ -471,6 +471,12 @@
         text-align: right;
         margin-right: 0.5rem;
         border-right: 1px solid #d0d5db;
+    }
+
+    .context-button {
+        position: absolute;
+        top: 0px;
+        right: 15px;
     }
 
     :global(pre code.hljs) {
