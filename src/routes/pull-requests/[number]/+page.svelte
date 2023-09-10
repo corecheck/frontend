@@ -171,6 +171,15 @@
                 >
                     {pr.title}
                 </a>
+
+                <span class="label" class:label-warning={isOutdated()}
+                    use:tooltip={{
+                        text: isOutdated()
+                            ? "Coverage data is out of date"
+                            : "Coverage data is up to date",
+                        position: "top",
+                    }}
+                    >{isOutdated() ? "Outdated coverage" : "Up to date"}</span>
             </h1>
 
             <div class="clearfix m-b-base" />

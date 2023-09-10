@@ -109,8 +109,8 @@
                         </span>
                     </td>
                     <td class="col-type-number col-field-number min-width">
-                        <span class="label" class:label-success={item.mutation_ratio >= 0.8} class:label-warning={item.mutation_ratio >= 0.6 && item.mutation_ratio < 0.8} class:label-danger={item.has_mutation && item.mutation_ratio < 0.6}>
-                            {item.mutation_ratio >= 0.8 ? Math.round(item.mutation_ratio * 100) + '%' : "N/A"}
+                        <span class="label" class:label-success={item.mutation_ratio >= 0.8} class:label-warning={item.mutation_ratio >= 0.4 && item.mutation_ratio < 0.6} class:label-danger={item.is_done_mutating && item.mutation_ratio < 0.4}>
+                            {item.is_done_mutating ? Math.round(item.mutation_ratio * 100) + '%' : "N/A"}
                         </span>
                     </td>
 
