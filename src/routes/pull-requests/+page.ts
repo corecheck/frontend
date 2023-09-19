@@ -1,5 +1,7 @@
+import { env } from '$env/dynamic/public'
+
 export async function _fetchPulls(title: string, page: number) {
-    return fetch(`http://localhost:1323/pr?page=${page}&title=${title}`)
+    return fetch(`${env.ENDPOINT}/pr?page=${page}&title=${title}`)
         .then(res => {
             if (res.status === 200) {
                 return res.json();

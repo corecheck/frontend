@@ -35,18 +35,6 @@
                     src="/icons/svg/pull-request.svg"
                 />
             </a>
-            <a
-                href="/jobs"
-                class="menu-item"
-                aria-label="Job queue"
-                class:active={$page.url.pathname.includes("/jobs")}
-                use:tooltip={{ text: "Job queue", position: "right" }}
-            >
-                <img height="25" alt="queue" src="/icons/png/queue.png" />
-            </a>
-            <a href="/settings" class="menu-item" aria-label="Settings">
-                <i class="ri-tools-line" />
-            </a>
         </nav>
 
         {#key user}

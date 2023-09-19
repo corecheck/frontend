@@ -8,13 +8,16 @@
     import diffLanguage, { diff } from "svelte-highlight/languages/diff";
     import github from "svelte-highlight/styles/github";
     import tooltip from "../../../actions/tooltip";
+    import { env } from '$env/dynamic/public'
     const pageTitle = "Pull requests";
     export let data;
     let { pr, coverage, mutations, votes } = data;
 
     function startCoverage() {
-        fetch("http://localhost:1323/pr/" + $page.params.number + "/analyze", {
+        fetch(`${env.ENDPOINT}/pr/${$page.params.number}/analyze`, {
             method: "POST",
+            withCredentials: true,
+            credentials: "include",
         })
             .then((res) => {
                 console.log(res);
@@ -105,7 +108,7 @@
             vote = "none";
         }
         fetch(
-            "http://localhost:1323/pr/" + $page.params.number + "/mutation/" + id + "/vote",
+            `${env.ENDPOINT}/pr/${$page.params.number}/mutation/${id}/vote`,
             {
                 method: "PUT",
                 body: JSON.stringify({
