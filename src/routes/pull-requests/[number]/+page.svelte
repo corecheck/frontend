@@ -8,7 +8,8 @@
     import diffLanguage, { diff } from "svelte-highlight/languages/diff";
     import github from "svelte-highlight/styles/github";
     import tooltip from "../../../actions/tooltip";
-    import { env } from '$env/dynamic/public'
+    import { env } from "$env/dynamic/public";
+    import { user } from "@/stores/user";
     const pageTitle = "Pull requests";
     export let data;
     let { pr, coverage, mutations, votes } = data;
@@ -142,6 +143,10 @@
         return "Uncovered and unchanged";
     }
 
+    let loggedIn = false;
+    user.subscribe((u) => {
+        loggedIn = u !== null;
+    });
 </script>
 
 <svelte:head>
@@ -172,14 +177,20 @@
                 </a>
 
                 {#if pr.has_coverage}
-                <span class="label" class:label-warning={isOutdated()} class:label-success={!isOutdated()}
-                    use:tooltip={{
-                        text: isOutdated()
-                            ? "Coverage data is out of date"
-                            : "Coverage data is up to date",
-                        position: "top",
-                    }}
-                    >{isOutdated() ? "Outdated coverage" : "Up to date"}</span>
+                    <span
+                        class="label"
+                        class:label-warning={isOutdated()}
+                        class:label-success={!isOutdated()}
+                        use:tooltip={{
+                            text: isOutdated()
+                                ? "Coverage data is out of date"
+                                : "Coverage data is up to date",
+                            position: "top",
+                        }}
+                        >{isOutdated()
+                            ? "Outdated coverage"
+                            : "Up to date"}</span
+                    >
                 {/if}
             </h1>
 
@@ -200,13 +211,22 @@
                         <i class="ri-information-line" /> No coverage data available
                         for this PR.
                     {/if}
-                    <button
-                        type="button"
-                        class="btn btn-primary"
-                        on:click={startCoverage}
-                    >
-                        Start coverage analysis
-                    </button>
+                    {#if loggedIn}
+                        <button
+                            type="button"
+                            class="btn btn-primary"
+                            on:click={startCoverage}
+                        >
+                            Start coverage analysis
+                        </button>
+                    {:else}
+                        <a
+                            class="btn btn-primary"
+                            href="/login"
+                        >
+                            Login to start coverage analysis
+                        </a>
+                    {/if}
                 </div>
             {/if}
         </div>
@@ -215,11 +235,15 @@
             {#if coverage !== null}
                 <div style="width: 48%">
                     <div class="flex">
-                        <h1>Coverage data</h1> 
-                        <span class="label" class:label-success={pr.coverage_ratio >= 0.8}
-                            class:label-warning={pr.coverage_ratio > 0.5 && pr.coverage_ratio < 0.8}
+                        <h1>Coverage data</h1>
+                        <span
+                            class="label"
+                            class:label-success={pr.coverage_ratio >= 0.8}
+                            class:label-warning={pr.coverage_ratio > 0.5 &&
+                                pr.coverage_ratio < 0.8}
                             class:label-danger={pr.coverage_ratio < 0.5}
-                            >{(pr.coverage_ratio * 100).toFixed(2)}%</span>
+                            >{(pr.coverage_ratio * 100).toFixed(2)}%</span
+                        >
                         {#if hasExpanded["coverage"]}
                             <button
                                 type="button"
@@ -293,9 +317,11 @@
                                                             class="line-number link-primary txt-mono"
                                                             >{line.line_number} </a><span
                                                             use:tooltip={{
-                                                                text: getLineTooltip(line),
+                                                                text: getLineTooltip(
+                                                                    line
+                                                                ),
                                                                 position: "top",
-                                                            }}  
+                                                            }}
                                                             class:line-changed-covered={line.covered &&
                                                                 line.changed &&
                                                                 line.testable}
@@ -322,14 +348,19 @@
                 <div style="width: 48%">
                     <div class="flex">
                         <h1>Mutation testing</h1>
-                        <span class="label" class:label-success={pr.mutation_ratio >= 0.8}
-                            class:label-warning={pr.mutation_ratio > 0.5 && pr.mutation_ratio < 0.8}
+                        <span
+                            class="label"
+                            class:label-success={pr.mutation_ratio >= 0.8}
+                            class:label-warning={pr.mutation_ratio > 0.5 &&
+                                pr.mutation_ratio < 0.8}
                             class:label-danger={pr.mutation_ratio < 0.5}
                             use:tooltip={{
-                                text: `${(pr.mutation_ratio * 100).toFixed(2)}% of generated mutations where killed`,
+                                text: `${(pr.mutation_ratio * 100).toFixed(
+                                    2
+                                )}% of generated mutations where killed`,
                                 position: "top",
-                            }}
-                            >{(pr.mutation_ratio * 100).toFixed(2)}%</span>
+                            }}>{(pr.mutation_ratio * 100).toFixed(2)}%</span
+                        >
                         {#if hasExpanded["mutations"]}
                             <button
                                 type="button"
@@ -388,9 +419,14 @@
                                             language={diff}
                                             code={mutation.diff}
                                         />
-                                        
-                                        <a href={`https://github.com/${pr.head_repo}/blob/${pr.head}/${mutation.file}#L${mutation.line}`} target="_blank"
-                                        class="context-button btn btn-secondary btn-sm">Open context</a><div class="help-block m-0">
+
+                                        <a
+                                            href={`https://github.com/${pr.head_repo}/blob/${pr.head}/${mutation.file}#L${mutation.line}`}
+                                            target="_blank"
+                                            class="context-button btn btn-secondary btn-sm"
+                                            >Open context</a
+                                        >
+                                        <div class="help-block m-0">
                                             Apply this patch to your code with <code
                                                 >patch -p0 {"<"} patch.diff</code
                                             >.
@@ -399,38 +435,54 @@
 
                                     <!-- vote for mutation, good or not -->
                                     {#key mutation.vote}
-                                    <div class="form-field m-0">
-                                        <button
-                                            type="button"
-                                            class="btn"
-                                            class:btn-primary={votes[mutation.id] === "must_fix"}
-                                            class:btn-secondary={votes[mutation.id] !== "must_fix"}
-                                            use:tooltip={{
-                                                text: "This mutation should be fixed",
-                                                position: "top",
-                                            }}
-                                            on:click={() => voteForMutation(mutation.id, "must_fix")}
-                                        >
-                                            <i class="ri-thumb-up-line" />
-                                            Must fix 
-                                        </button>
-                                        <button
-                                            type="button"
-                                            class="btn"
-                                            class:btn-primary={votes[mutation.id] === "ignore"}
-                                            class:btn-secondary={votes[mutation.id] !== "ignore"}
-                                            use:tooltip={{
-                                                text: "This mutation is not relevant for this PR",
-                                                position: "top",
-                                            }}
-                                            on:click={() => voteForMutation(mutation.id, "ignore")}>
-                                            <i class="ri-thumb-down-line" />
-                                            Ignore
-                                        </button>
-                                    </div>
+                                        <div class="form-field m-0">
+                                            <button
+                                                type="button"
+                                                class="btn"
+                                                class:btn-primary={votes[
+                                                    mutation.id
+                                                ] === "must_fix"}
+                                                class:btn-secondary={votes[
+                                                    mutation.id
+                                                ] !== "must_fix"}
+                                                use:tooltip={{
+                                                    text: "This mutation should be fixed",
+                                                    position: "top",
+                                                }}
+                                                on:click={() =>
+                                                    voteForMutation(
+                                                        mutation.id,
+                                                        "must_fix"
+                                                    )}
+                                            >
+                                                <i class="ri-thumb-up-line" />
+                                                Must fix
+                                            </button>
+                                            <button
+                                                type="button"
+                                                class="btn"
+                                                class:btn-primary={votes[
+                                                    mutation.id
+                                                ] === "ignore"}
+                                                class:btn-secondary={votes[
+                                                    mutation.id
+                                                ] !== "ignore"}
+                                                use:tooltip={{
+                                                    text: "This mutation is not relevant for this PR",
+                                                    position: "top",
+                                                }}
+                                                on:click={() =>
+                                                    voteForMutation(
+                                                        mutation.id,
+                                                        "ignore"
+                                                    )}
+                                            >
+                                                <i class="ri-thumb-down-line" />
+                                                Ignore
+                                            </button>
+                                        </div>
                                     {/key}
-                                    </Accordion
-                                >
+                                </Accordion>
                             {/each}
                         </div>
                     {/key}

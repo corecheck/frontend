@@ -1,8 +1,8 @@
 import { redirect, type Actions } from "@sveltejs/kit";
 import { env } from '$env/dynamic/public'
+import { setUser } from "../stores/user.js";
 
 export async function load({fetch}) {
-    console.log('load')
     const data = await fetch(`${env.PUBLIC_ENDPOINT}/me`, { 
         withCredentials: true,
         credentials: "include",
@@ -11,6 +11,8 @@ export async function load({fetch}) {
             return response.json();
         }
     });
+
+    setUser(data);
 
     return {
         user: data,
