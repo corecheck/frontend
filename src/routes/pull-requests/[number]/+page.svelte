@@ -14,7 +14,7 @@
     let { pr, coverage, mutations, votes } = data;
 
     function startCoverage() {
-        fetch(`${env.ENDPOINT}/pr/${$page.params.number}/analyze`, {
+        fetch(`${env.PUBLIC_ENDPOINT}/pr/${$page.params.number}/analyze`, {
             method: "POST",
             withCredentials: true,
             credentials: "include",
@@ -108,7 +108,7 @@
             vote = "none";
         }
         fetch(
-            `${env.ENDPOINT}/pr/${$page.params.number}/mutation/${id}/vote`,
+            `${env.PUBLIC_ENDPOINT}/pr/${$page.params.number}/mutation/${id}/vote`,
             {
                 method: "PUT",
                 body: JSON.stringify({

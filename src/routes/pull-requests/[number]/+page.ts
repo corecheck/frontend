@@ -1,7 +1,7 @@
 import { env } from '$env/dynamic/public'
 
 export async function _fetchCoverage(number: number, full: boolean) {
-    return fetch(`${env.ENDPOINT}/pr/${number}/coverage?full=${full ? "true" : "false"}`)
+    return fetch(`${env.PUBLIC_ENDPOINT}/pr/${number}/coverage?full=${full ? "true" : "false"}`)
         .then(res => {
             if (res.status === 200) {
                 return res.json();
@@ -14,7 +14,7 @@ export async function _fetchCoverage(number: number, full: boolean) {
 }
 
 export async function _fetchMutations(number: number) {
-    return fetch(`${env.ENDPOINT}/pr/${number}/mutations`, {
+    return fetch(`${env.PUBLIC_ENDPOINT}/pr/${number}/mutations`, {
         method: "GET",
         credentials: "include",
         withCredentials: true,
@@ -31,7 +31,7 @@ export async function _fetchMutations(number: number) {
 }
 
 export async function load({ params }) {
-    const pr = await fetch(`${env.ENDPOINT}/pr/${params.number}`)
+    const pr = await fetch(`${env.PUBLIC_ENDPOINT}/pr/${params.number}`)
         .then((res) => res.json())
         .catch((err) => {
             console.error(err);

@@ -3,7 +3,7 @@ import { env } from '$env/dynamic/public'
 
 export async function load({fetch}) {
     console.log('load')
-    const data = await fetch(`${env.ENDPOINT}/me`, { 
+    const data = await fetch(`${env.PUBLIC_ENDPOINT}/me`, { 
         withCredentials: true,
         credentials: "include",
     }).then((response) => {
