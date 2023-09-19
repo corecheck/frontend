@@ -4,9 +4,12 @@
     import { page } from "$app/stores";
     import Toggler from "../components/base/Toggler.svelte";
     import "../scss/main.scss";
+    import { setContext } from 'svelte';
 
     export let data;
     let { user } = data;
+
+    setContext('user', user);
 </script>
 
 <div class="app-layout">

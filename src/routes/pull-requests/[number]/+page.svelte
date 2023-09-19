@@ -9,7 +9,7 @@
     import github from "svelte-highlight/styles/github";
     import tooltip from "../../../actions/tooltip";
     import { env } from "$env/dynamic/public";
-    import { user } from "@/stores/user";
+    import { getContext } from 'svelte';
     const pageTitle = "Pull requests";
     export let data;
     let { pr, coverage, mutations, votes } = data;
@@ -143,10 +143,7 @@
         return "Uncovered and unchanged";
     }
 
-    let loggedIn = false;
-    user.subscribe((u) => {
-        loggedIn = u !== null;
-    });
+	const user = getContext('user');
 </script>
 
 <svelte:head>
@@ -211,7 +208,7 @@
                         <i class="ri-information-line" /> No coverage data available
                         for this PR.
                     {/if}
-                    {#if loggedIn}
+                    {#if user}
                         <button
                             type="button"
                             class="btn btn-primary"
