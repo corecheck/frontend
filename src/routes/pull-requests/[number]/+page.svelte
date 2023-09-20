@@ -1,6 +1,6 @@
 <script lang="ts">
     import { page } from "$app/stores";
-    import { _fetchCoverage, _fetchMutations } from "./+page";
+    import { _fetchCoverage, _fetchMutations } from "./+page.server";
     import Accordion from "../../../components/base/Accordion.svelte";
     import Field from "../../../components/base/Field.svelte";
     import JobList from "../../../components/jobs/JobList.svelte";
@@ -24,6 +24,7 @@
             .then((res) => {
                 console.log(res);
                 invalidateAll();
+                window.location.reload();
             })
             .catch((err) => {
                 console.error(err);
