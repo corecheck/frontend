@@ -10,6 +10,7 @@
     import tooltip from "../../../actions/tooltip";
     import { env } from "$env/dynamic/public";
     import { getContext } from 'svelte';
+    import { invalidateAll } from "$app/navigation";
     const pageTitle = "Pull requests";
     export let data;
     let { pr, coverage, mutations, votes } = data;
@@ -22,7 +23,7 @@
         })
             .then((res) => {
                 console.log(res);
-                window.location.reload();
+                invalidateAll();
             })
             .catch((err) => {
                 console.error(err);
