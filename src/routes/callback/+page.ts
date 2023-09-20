@@ -9,6 +9,7 @@ export async function load({ url, fetch }) {
     const response = await fetch(`${env.PUBLIC_ENDPOINT}/authenticate?code=${code}`, {
         method: 'POST',
         credentials: 'include',
+        withCredentials: true,
     });
 
     if (response.status === 200) {
