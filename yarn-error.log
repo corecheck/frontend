@@ -1,8 +1,8 @@
 Arguments: 
-  /home/aureleoules/.nvm/versions/node/v20.5.0/bin/node /usr/bin/yarn add -D sass
+  /home/aureleoules/.nvm/versions/node/v20.5.0/bin/node /usr/bin/yarn add -D @svelte/adapter-netlify
 
 PATH: 
-  /home/aureleoules/.nvm/versions/node/v20.5.0/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/usr/lib/wsl/lib:/mnt/c/Program Files/Common Files/Oracle/Java/javapath:/mnt/c/Program Files (x86)/Common Files/Oracle/Java/javapath:/mnt/c/Windows/system32:/mnt/c/Windows:/mnt/c/Windows/System32/Wbem:/mnt/c/Windows/System32/WindowsPowerShell/v1.0/:/mnt/c/Windows/System32/OpenSSH/:/mnt/c/ProgramData/chocolatey/bin:/mnt/c/Program Files/Docker/Docker/resources/bin:/mnt/c/Program Files/Git/cmd:/mnt/c/Users/aureleoules/AppData/Local/Microsoft/WindowsApps:/mnt/c/Users/aureleoules/AppData/Local/Programs/Microsoft VS Code/bin:/mnt/c/Program Files/mitmproxy/bin:/snap/bin:/usr/local/go/bin:/usr/local/go/bin
+  /home/aureleoules/.nvm/versions/node/v20.5.0/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/usr/lib/wsl/lib:/mnt/c/Program Files/Common Files/Oracle/Java/javapath:/mnt/c/Program Files (x86)/Common Files/Oracle/Java/javapath:/mnt/c/Windows/system32:/mnt/c/Windows:/mnt/c/Windows/System32/Wbem:/mnt/c/Windows/System32/WindowsPowerShell/v1.0/:/mnt/c/Windows/System32/OpenSSH/:/mnt/c/ProgramData/chocolatey/bin:/mnt/c/Program Files/Git/cmd:/mnt/c/Program Files/Docker/Docker/resources/bin:/mnt/c/Users/aureleoules/AppData/Local/Microsoft/WindowsApps:/mnt/c/Users/aureleoules/AppData/Local/Programs/Microsoft VS Code/bin:/mnt/c/Program Files/mitmproxy/bin:/snap/bin:/usr/local/go/bin:/usr/local/go/bin
 
 Yarn version: 
   1.22.19
@@ -14,12 +14,17 @@ Platform:
   linux x64
 
 Trace: 
-  AggregateError
-      at internalConnectMultiple (node:net:1114:18)
-      at internalConnectMultiple (node:net:1177:5)
-      at Timeout.internalConnectMultipleTimeout (node:net:1687:3)
-      at listOnTimeout (node:internal/timers:575:11)
-      at process.processTimers (node:internal/timers:514:7)
+  Error: https://registry.yarnpkg.com/@svelte%2fadapter-netlify: Not found
+      at params.callback [as _callback] (/usr/lib/node_modules/yarn/lib/cli.js:66145:18)
+      at self.callback (/usr/lib/node_modules/yarn/lib/cli.js:140890:22)
+      at Request.emit (node:events:514:28)
+      at Request.<anonymous> (/usr/lib/node_modules/yarn/lib/cli.js:141862:10)
+      at Request.emit (node:events:514:28)
+      at IncomingMessage.<anonymous> (/usr/lib/node_modules/yarn/lib/cli.js:141784:12)
+      at Object.onceWrapper (node:events:628:28)
+      at IncomingMessage.emit (node:events:526:35)
+      at endReadableNT (node:internal/streams/readable:1376:12)
+      at process.processTicksAndRejections (node:internal/process/task_queues:82:21)
 
 npm manifest: 
   {
@@ -38,13 +43,19 @@ npm manifest:
   		"@sveltejs/adapter-auto": "^2.0.0",
   		"@sveltejs/kit": "^1.20.4",
   		"@types/cookie": "^0.5.1",
+  		"luxon": "^3.4.0",
+  		"sass": "^1.66.1",
   		"svelte": "^4.0.5",
   		"svelte-check": "^3.4.3",
   		"tslib": "^2.4.1",
   		"typescript": "^5.0.0",
   		"vite": "^4.4.2"
   	},
-  	"type": "module"
+  	"type": "module",
+  	"dependencies": {
+  		"dayjs": "^1.11.9",
+  		"svelte-highlight": "^7.3.0"
+  	}
   }
 
 yarn manifest: 
@@ -370,7 +381,7 @@ Lockfile:
     resolved "https://registry.yarnpkg.com/callsites/-/callsites-3.1.0.tgz#b3630abd8943432f54b3f0519238e33cd7df2f73"
     integrity sha512-P8BjAsXvZS+VIDUI11hHCQEv74YT67YUi5JJFNWIqL235sBmjX4+qx9Muvls5ivyNENctx46xQLQ3aTuE7ssaQ==
   
-  chokidar@^3.4.1:
+  "chokidar@>=3.0.0 <4.0.0", chokidar@^3.4.1:
     version "3.5.3"
     resolved "https://registry.yarnpkg.com/chokidar/-/chokidar-3.5.3.tgz#1cf37c8707b932bd1af1ae22c0432e2acd1903bd"
     integrity sha512-Dr3sfKRP6oTcjf2JmUmFJfeVMvXBdegxB0iVQ5eb2V10uFJUCAS8OByZdVAyVb8xXNz3GjjTgj9kLWsZTqE6kw==
@@ -413,6 +424,11 @@ Lockfile:
     dependencies:
       mdn-data "2.0.30"
       source-map-js "^1.0.1"
+  
+  dayjs@^1.11.9:
+    version "1.11.9"
+    resolved "https://registry.yarnpkg.com/dayjs/-/dayjs-1.11.9.tgz#9ca491933fadd0a60a2c19f6c237c03517d71d1a"
+    integrity sha512-QvzAURSbQ0pKdIye2txOzNaHmxtUBXerpY0FJsFXUMKbIZeFm5ht1LS/jFsrncjnmtv8HsG0W2g6c0zUjZWmpA==
   
   debug@^4.3.4:
     version "4.3.4"
@@ -545,6 +561,16 @@ Lockfile:
     resolved "https://registry.yarnpkg.com/graceful-fs/-/graceful-fs-4.2.11.tgz#4183e4e8bf08bb6e05bbb2f7d2e0c8f712ca40e3"
     integrity sha512-RbJ5/jmFcNNCcDV5o9eTnBLJ/HszWV0P73bc+Ff4nS/rJj+YaS6IGyiOL0VoBYX+l1Wrl3k63h/KrH+nhJ0XvQ==
   
+  highlight.js@11.8.0:
+    version "11.8.0"
+    resolved "https://registry.yarnpkg.com/highlight.js/-/highlight.js-11.8.0.tgz#966518ea83257bae2e7c9a48596231856555bb65"
+    integrity sha512-MedQhoqVdr0U6SSnWPzfiadUcDHfN/Wzq25AkXiQv9oiOO/sG0S7XkvpFIqWBl9Yq1UYyYOOVORs5UW2XlPyzg==
+  
+  immutable@^4.0.0:
+    version "4.3.2"
+    resolved "https://registry.yarnpkg.com/immutable/-/immutable-4.3.2.tgz#f89d910f8dfb6e15c03b2cae2faaf8c1f66455fe"
+    integrity sha512-oGXzbEDem9OOpDWZu88jGiYCvIsLHMvGw+8OXlpsvTFvIQplQbjg1B1cvKg8f7Hoch6+NGjpPsH1Fr+Mc2D1aA==
+  
   import-fresh@^3.2.1:
     version "3.3.0"
     resolved "https://registry.yarnpkg.com/import-fresh/-/import-fresh-3.3.0.tgz#37162c25fcb9ebaa2e6e53d5b4d88ce17d9e0c2b"
@@ -611,6 +637,11 @@ Lockfile:
     version "3.0.0"
     resolved "https://registry.yarnpkg.com/locate-character/-/locate-character-3.0.0.tgz#0305c5b8744f61028ef5d01f444009e00779f974"
     integrity sha512-SW13ws7BjaeJ6p7Q6CO2nchbYEc3X3J6WrmTTDto7yMPqVSZTUyY5Tjbid+Ab8gLnATtygYtiDIJGQRRn2ZOiA==
+  
+  luxon@^3.4.0:
+    version "3.4.0"
+    resolved "https://registry.yarnpkg.com/luxon/-/luxon-3.4.0.tgz#17cb754efecbf76994f05b2a3f1f91fad7ddfde7"
+    integrity sha512-7eDo4Pt7aGhoCheGFIuq4Xa2fJm4ZpmldpGhjTYBNUYNCN6TIEP6v7chwwwt3KRp7YR+rghbfvjyo3V5y9hgBw==
   
   magic-string@^0.27.0:
     version "0.27.0"
@@ -805,6 +836,15 @@ Lockfile:
       mkdirp "^0.5.1"
       rimraf "^2.5.2"
   
+  sass@^1.66.1:
+    version "1.66.1"
+    resolved "https://registry.yarnpkg.com/sass/-/sass-1.66.1.tgz#04b51c4671e4650aa393740e66a4e58b44d055b1"
+    integrity sha512-50c+zTsZOJVgFfTgwwEzkjA3/QACgdNsKueWPyAR0mRINIvLAStVQBbPg14iuqEQ74NPDbXzJARJ/O4SI1zftA==
+    dependencies:
+      chokidar ">=3.0.0 <4.0.0"
+      immutable "^4.0.0"
+      source-map-js ">=0.6.2 <2.0.0"
+  
   set-cookie-parser@^2.6.0:
     version "2.6.0"
     resolved "https://registry.yarnpkg.com/set-cookie-parser/-/set-cookie-parser-2.6.0.tgz#131921e50f62ff1a66a461d7d62d7b21d5d15a51"
@@ -829,7 +869,7 @@ Lockfile:
       minimist "^1.2.0"
       sander "^0.5.0"
   
-  source-map-js@^1.0.1, source-map-js@^1.0.2:
+  "source-map-js@>=0.6.2 <2.0.0", source-map-js@^1.0.1, source-map-js@^1.0.2:
     version "1.0.2"
     resolved "https://registry.yarnpkg.com/source-map-js/-/source-map-js-1.0.2.tgz#adbc361d9c62df380125e7f161f71c826f1e490c"
     integrity sha512-R0XvVJ9WusLiqTCEiGCmICCMplcCkIwwR11mOSD9CR5u+IXYdiseeEuXCVAjS54zqwkLcPNnmU4OeJ6tUrWhDw==
@@ -859,6 +899,13 @@ Lockfile:
       sade "^1.7.4"
       svelte-preprocess "^5.0.4"
       typescript "^5.0.3"
+  
+  svelte-highlight@^7.3.0:
+    version "7.3.0"
+    resolved "https://registry.yarnpkg.com/svelte-highlight/-/svelte-highlight-7.3.0.tgz#19de767583abc29eef783fde1c1460af65857acb"
+    integrity sha512-59oE9/xOFXAdT97qXIt6HMlzL2f+0YNQ+BArzRONwCW96ElxX7TGme1kU5s3tsk1D88G5dhBixcP1chOGOkVsg==
+    dependencies:
+      highlight.js "11.8.0"
   
   svelte-hmr@^0.15.3:
     version "0.15.3"
