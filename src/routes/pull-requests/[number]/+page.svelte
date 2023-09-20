@@ -433,10 +433,11 @@
 
                                     <!-- vote for mutation, good or not -->
                                     {#key mutation.vote}
-                                        <div class="form-field m-0">
+                                        <div class="form-field" class:m-0={user}>
                                             <button
                                                 type="button"
                                                 class="btn"
+                                                disabled={!user}
                                                 class:btn-primary={votes[
                                                     mutation.id
                                                 ] === "must_fix"}
@@ -459,6 +460,7 @@
                                             <button
                                                 type="button"
                                                 class="btn"
+                                                disabled={!user}
                                                 class:btn-primary={votes[
                                                     mutation.id
                                                 ] === "ignore"}
@@ -479,6 +481,12 @@
                                                 Ignore
                                             </button>
                                         </div>
+                                    {#if !user}
+                                        <div class="alert alert-info m-0">
+                                            <i class="ri-information-line" /> Login to vote for
+                                            mutations
+                                        </div>
+                                    {/if}
                                     {/key}
                                 </Accordion>
                             {/each}
