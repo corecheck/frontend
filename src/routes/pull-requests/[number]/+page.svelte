@@ -85,6 +85,10 @@
                 return "'>' to '<'";
             case "mutator-less-to-greater":
                 return "'<' to '>'";
+            case "mutator-less-eq-to-greater-eq":
+                return "'<=' to '>='";
+            case "mutator-greater-eq-to-less-eq":
+                return "'>=' to '<='";
             case "mutator-eq-to-neq":
                 return "'==' to '!='";
             case "mutator-neq-to-eq":
