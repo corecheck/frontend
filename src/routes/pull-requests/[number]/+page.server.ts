@@ -1,5 +1,5 @@
 import { env } from '$env/dynamic/public'
-export async function _fetchCoverage(number: number) {
+export async function _fetchCoverage(fetch, number: number) {
     return fetch(`${env.PUBLIC_ENDPOINT}/pr/${number}/coverage?full=true`)
         .then(res => {
             if (res.status === 200) {
@@ -13,7 +13,7 @@ export async function _fetchCoverage(number: number) {
 }
 
 
-export async function _fetchMutations(number: number) {
+export async function _fetchMutations(fetch, number: number) {
     return fetch(`${env.PUBLIC_ENDPOINT}/pr/${number}/mutations`, {
         method: "GET",
         credentials: "include",
@@ -31,14 +31,14 @@ export async function _fetchMutations(number: number) {
 }
 
 
-export async function load({ params }) {
+export async function load({ params, fetch }) {
     const pr = await fetch(`${env.PUBLIC_ENDPOINT}/pr/${params.number}`)
         .then((res) => res.json())
         .catch((err) => {
             console.error(err);
         });
 
-    const mutations = await _fetchMutations(params.number);
+    const mutations = await _fetchMutations(fetch, params.number);
     let votes: Record<string, string> = {}; 
     if (mutations) {
         for (const mutation of mutations) {
@@ -50,7 +50,7 @@ export async function load({ params }) {
 
     return {
         pr,
-        coverage: await _fetchCoverage(params.number, false),
+        coverage: await _fetchCoverage(fetch, params.number, false),
         mutations: mutations || [],
         votes: votes,
     };
