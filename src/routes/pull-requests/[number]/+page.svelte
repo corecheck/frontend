@@ -71,13 +71,6 @@
         hasExpanded[accType] = false;
     }
 
-    let fullCoverage = false;
-
-    // detect fullCoverage change
-    async function onChangeFullCoverage(e) {
-        coverage = await _fetchCoverage(pr.number, e.target.checked);
-    }
-
     function getMutatorDescription(mutator) {
         switch (mutator) {
             case "mutator-true-to-false":
@@ -263,16 +256,6 @@
                         {/if}
                     </div>
                     <div class="clearfix m-b-base" />
-                    <Field class="form-field form-field-toggle" let:uniqueId>
-                        <input
-                            on:change={onChangeFullCoverage}
-                            type="checkbox"
-                            id={uniqueId}
-                            required
-                            bind:checked={fullCoverage}
-                        />
-                        <label for={uniqueId}>Display full coverage</label>
-                    </Field>
                     {#key coverage}
                         {#if coverage?.length === 0}
                             <div
