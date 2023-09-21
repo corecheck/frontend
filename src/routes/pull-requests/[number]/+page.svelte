@@ -1,6 +1,5 @@
 <script lang="ts">
     import { page } from "$app/stores";
-    import { _fetchCoverage, _fetchMutations } from "./+page";
     import Accordion from "../../../components/base/Accordion.svelte";
     import Field from "../../../components/base/Field.svelte";
     import Highlight from "svelte-highlight";
