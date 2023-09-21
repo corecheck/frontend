@@ -222,9 +222,9 @@
             {/if}
         </div>
         <div class="clearfix m-b-base" />
-        <div class="flex flex-justify-between flex-align-start">
+        <div class="cov-container flex flex-justify-between flex-align-start">
             {#if coverage !== null}
-                <div style="width: 48%">
+                <div class="cov-col">
                     <div class="flex">
                         <h1>Coverage data</h1>
                         <span
@@ -326,7 +326,7 @@
                 </div>
             {/if}
             {#if pr.is_done_mutating}
-                <div style="width: 48%">
+                <div class="cov-col">
                     <div class="flex">
                         <h1>Mutation testing</h1>
                         <span
@@ -483,6 +483,20 @@
 </div>
 
 <style lang="scss">
+
+    .cov-container {
+        @media (max-width: 1100px) {
+            flex-direction: column;
+
+            .cov-col {
+                width: 100%!important;
+            }
+        }
+        .cov-col {
+            width: 48%;
+        }
+    }
+
     .code {
         background-color: #f1f1f1;
         padding: 1rem;
