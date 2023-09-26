@@ -1,8 +1,7 @@
 <script>
-    import Field from "../../components/base/Field.svelte";
-    import RefreshButton from "../../components/base/RefreshButton.svelte";
-    import Searchbar from "../../components/base/Searchbar.svelte";
-    import PRList from "../../components/pull-requests/PRList.svelte";
+    import RefreshButton from "../../../../components/base/RefreshButton.svelte";
+    import Searchbar from "../../../../components/base/Searchbar.svelte";
+    import PRList from "@/components/pull-requests/PRList.svelte";
 
     const pageTitle = "Pull requests";
 

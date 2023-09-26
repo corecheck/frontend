@@ -25,10 +25,10 @@
 
         <nav class="main-menu">
             <a
-                href="/pull-requests"
+                href="/bitcoin/bitcoin/pulls"
                 class="menu-item"
                 aria-label="Pull requests"
-                class:active={$page.url.pathname.startsWith("/pull-requests")}
+                class:active={$page.url.pathname.includes("/pulls")}
                 use:tooltip={{ text: "Pull requests", position: "right" }}
             >
                 <img

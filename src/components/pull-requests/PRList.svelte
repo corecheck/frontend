@@ -1,5 +1,4 @@
 <script>
-    import { createEventDispatcher } from "svelte";
     import CommonHelper from "@/utils/CommonHelper";
     import SortHeader from "@/components/base/SortHeader.svelte";
     import FormattedDate from "@/components/base/FormattedDate.svelte";
@@ -79,7 +78,7 @@
                 <tr
                     tabindex="0"
                     class="row-handle"
-                    on:click={() => window.open("/pull-requests/" + item.number, "_blank")}
+                    on:click={() => window.open("/bitcoin/bitcoin/pulls/" + item.number, "_blank")}
                 >
                     <td class="col-type-text col-field-method min-width">
                         <span class="label" class:label-danger={item.state === "closed"} class:label-success={item.state === "open"}>

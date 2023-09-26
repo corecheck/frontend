@@ -1,4 +1,4 @@
 import { redirect } from '@sveltejs/kit';
 export function load() {
-  throw redirect(302, '/pull-requests');
+  throw redirect(302, '/bitcoin/bitcoin/pulls');
 }

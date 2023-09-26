@@ -1,11 +1,11 @@
 <script lang="ts">
     import { page } from "$app/stores";
-    import Accordion from "../../../components/base/Accordion.svelte";
-    import Field from "../../../components/base/Field.svelte";
+    import Accordion from "../../../../../components/base/Accordion.svelte";
+    import Field from "../../../../../components/base/Field.svelte";
     import Highlight from "svelte-highlight";
     import { diff } from "svelte-highlight/languages/diff";
     import github from "svelte-highlight/styles/github";
-    import tooltip from "../../../actions/tooltip";
+    import tooltip from "../../../../../actions/tooltip";
     import { env } from "$env/dynamic/public";
     import { getContext } from 'svelte';
     import { invalidateAll } from "$app/navigation";
