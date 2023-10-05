@@ -229,7 +229,7 @@
             {#if coverage !== null}
                 <div class="cov-col">
                     <div class="flex">
-                        <h1>Coverage data</h1>
+                        <h1>Coverage</h1>
                         <span
                             class="label"
                             class:label-success={pr.coverage_ratio >= 0.8}
