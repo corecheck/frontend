@@ -29,7 +29,10 @@
             });
     }
 
+
+    let disableMutationButton = false;
     function startMutationTesting() {
+        disableMutationButton = true;
         fetch(`${env.PUBLIC_ENDPOINT}/pr/${$page.params.number}/mutate`, {
             method: "POST",
             withCredentials: true,
@@ -348,7 +351,7 @@
                 <div class="alert alert-info" style="text-align: center">
                     <i class="ri-information-line" /> Mutation testing is available for
                     this PR.
-                    <button type="button" class="btn btn-primary" on:click={startMutationTesting}>
+                    <button type="button" class="btn btn-primary" disabled:{disableMutationButton} on:click={startMutationTesting}>
                         Start mutation testing
                     </button>
                 </div>
