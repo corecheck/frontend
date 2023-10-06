@@ -29,6 +29,22 @@
             });
     }
 
+    function startMutationTesting() {
+        fetch(`${env.PUBLIC_ENDPOINT}/pr/${$page.params.number}/mutate`, {
+            method: "POST",
+            withCredentials: true,
+            credentials: "include",
+        })
+            .then((res) => {
+                console.log(res);
+                invalidateAll();
+                window.location.reload();
+            })
+            .catch((err) => {
+                console.error(err);
+            });
+    }
+
     function hasRunningJob() {
         return pr.jobs?.some(
             (job) =>
@@ -328,8 +344,17 @@
                     {/key}
                 </div>
             {/if}
-            {#if pr.is_done_mutating}
-                <div class="cov-col">
+            <div class="cov-col">
+                {#if pr.has_coverage && pr.coverage_commit != pr.mutation_commit}
+                <div class="alert alert-info" style="text-align: center">
+                    <i class="ri-information-line" /> Mutation testing is available for
+                    this PR.
+                    <button type="button" class="btn btn-primary" on:click={startMutationTesting}>
+                        Start mutation testing
+                    </button>
+                </div>
+                {/if}
+                {#if pr.mutation_commit}
                     <div class="flex">
                         <h1>Mutation testing</h1>
                         <span
@@ -367,7 +392,7 @@
                     </div>
                     <div class="clearfix m-b-base" />
                     {#key mutations}
-                        {#if mutations?.length === 0 && pr.has_generated_mutations}
+                        {#if mutations?.length === 0}
                             <div
                                 class="alert alert-success"
                                 style="text-align: center"
@@ -478,8 +503,8 @@
                             {/each}
                         </div>
                     {/key}
-                </div>
-            {/if}
+                {/if}
+            </div>
         </div>
         <div class="clearfix m-b-base" />
     </main>
