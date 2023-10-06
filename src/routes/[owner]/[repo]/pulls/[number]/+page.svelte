@@ -504,7 +504,8 @@
                     {/key}
                 {/if}
             </div>
-            {:else}
+            {/if}
+            {#if coverage === null && !hasRunningJob()}
                 <div class="alert alert-info" style="text-align: center">
                     <i class="ri-information-line" /> No coverage data available for
                     this pull request and commit.
