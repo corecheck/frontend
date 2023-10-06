@@ -345,7 +345,7 @@
                 </div>
             {/if}
             <div class="cov-col">
-                {#if pr.has_coverage && pr.generated_mutations > 0 && pr.coverage_commit != pr.mutation_commit}
+                {#if pr.has_coverage && pr.mutations_generated > 0 && pr.coverage_commit != pr.mutation_commit}
                 <div class="alert alert-info" style="text-align: center">
                     <i class="ri-information-line" /> Mutation testing is available for
                     this PR.
