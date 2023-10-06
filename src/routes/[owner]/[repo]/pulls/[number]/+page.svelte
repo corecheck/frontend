@@ -354,7 +354,7 @@
                     </button>
                 </div>
                 {/if}
-                {#if pr.mutation_commit}
+                {#if pr.mutation_commit || mutations?.length > 0}
                     <div class="flex">
                         <h1>Mutation testing</h1>
                         <span
