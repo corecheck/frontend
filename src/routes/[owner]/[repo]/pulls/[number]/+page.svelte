@@ -7,11 +7,11 @@
     import github from "svelte-highlight/styles/github";
     import tooltip from "../../../../../actions/tooltip";
     import { env } from "$env/dynamic/public";
-    import { getContext } from 'svelte';
+    import { getContext } from "svelte";
     import { invalidateAll } from "$app/navigation";
     const pageTitle = "Pull requests";
     export let data;
-    let { pr, coverage, mutations, votes } = data;
+    let { pr, coverage, mutations, votes, sonarcloud } = data;
 
     function startCoverage() {
         fetch(`${env.PUBLIC_ENDPOINT}/pr/${$page.params.number}/analyze`, {
@@ -20,7 +20,6 @@
             credentials: "include",
         })
             .then((res) => {
-                console.log(res);
                 invalidateAll();
                 window.location.reload();
             })
@@ -28,7 +27,6 @@
                 console.error(err);
             });
     }
-
 
     let disableMutationButton = false;
     function startMutationTesting() {
@@ -39,7 +37,6 @@
             credentials: "include",
         })
             .then((res) => {
-                console.log(res);
                 invalidateAll();
                 window.location.reload();
             })
@@ -61,7 +58,6 @@
     };
 
     function expandAll(accType: string) {
-        console.log("expandAll", accType);
         const accordionsDiv = document.querySelector(".accordions." + accType);
         const accordions = accordionsDiv?.querySelectorAll(".accordion");
         for (const accordion of accordions) {
@@ -139,7 +135,6 @@
             }
         )
             .then((res) => {
-                console.log(res);
                 votes[id] = vote;
             })
             .catch((err) => {
@@ -159,7 +154,7 @@
         return "Uncovered and unchanged";
     }
 
-	const user = getContext('user');
+    const user = getContext("user");
 </script>
 
 <svelte:head>
@@ -233,10 +228,7 @@
                             Start coverage analysis
                         </button>
                     {:else}
-                        <a
-                            class="btn btn-primary"
-                            href="/login"
-                        >
+                        <a class="btn btn-primary" href="/login">
                             Login to start coverage analysis
                         </a>
                     {/if}
@@ -346,196 +338,280 @@
                         </div>
                     {/key}
                 </div>
-            <div class="cov-col">
-                {#if pr.has_coverage && pr.mutations_generated > 0 && pr.coverage_commit != pr.mutation_commit && !hasRunningJob()}
-                <div class="alert alert-info" style="text-align: center">
-                    <i class="ri-information-line" /> Mutation testing is available for
-                    this PR.
-                    <button type="button" class="btn btn-primary" disabled={disableMutationButton} on:click={startMutationTesting}>
-                        Start mutation testing
-                    </button>
-                </div>
-                {/if}
-                {#if pr.mutation_commit || mutations?.length > 0}
-                    <div class="flex">
-                        <h1>Mutation testing</h1>
-                        <span
-                            class="label"
-                            class:label-success={pr.mutation_ratio >= 0.8}
-                            class:label-warning={pr.mutation_ratio > 0.5 &&
-                                pr.mutation_ratio < 0.8}
-                            class:label-danger={pr.mutation_ratio < 0.5}
-                            use:tooltip={{
-                                text: `${(pr.mutation_ratio * 100).toFixed(
-                                    2
-                                )}% of generated mutations where killed`,
-                                position: "top",
-                            }}>{(pr.mutation_ratio * 100).toFixed(2)}%</span
+                <div class="cov-col">
+                    {#if pr.has_coverage && pr.mutations_generated > 0 && pr.coverage_commit != pr.mutation_commit && !hasRunningJob()}
+                        <div
+                            class="alert alert-info"
+                            style="text-align: center"
                         >
-                        {#if hasExpanded["mutations"]}
+                            <i class="ri-information-line" /> Mutation testing
+                            is available for this PR.
                             <button
                                 type="button"
-                                class="btn btn-sm btn-primary"
-                                on:click={() => collapseAll("mutations")}
+                                class="btn btn-primary"
+                                disabled={disableMutationButton}
+                                on:click={startMutationTesting}
                             >
-                                <i class="ri-arrow-up-s-line" />
-                                Collapse all
+                                Start mutation testing
                             </button>
-                        {:else}
-                            <button
-                                type="button"
-                                class="btn btn-sm btn-primary"
-                                on:click={() => expandAll("mutations")}
-                            >
-                                <i class="ri-arrow-down-s-line" />
-                                Expand all
-                            </button>
-                        {/if}
-                    </div>
-                    <div class="clearfix m-b-base" />
-                    {#key mutations}
-                        {#if mutations?.length === 0 && pr.is_done_mutating}
-                            <div
-                                class="alert alert-success"
-                                style="text-align: center"
-                            >
-                                <i class="ri-information-line" /> No mutations survived.
-                            </div>
-                        {/if}
-                        {#if mutations?.length === 0 && !pr.is_done_mutating}
-                            <div
-                                class="alert alert-info"
-                                style="text-align: center"
-                            >
-                                <i class="ri-information-line" /> No mutations generated
-                                yet.
-                            </div>
-                        {/if}
-                        <div class="accordions mutations">
-                            {#each mutations as mutation}
-                                <Accordion>
-                                    <svelte:fragment slot="header">
-                                        <div class="inline-flex">
-                                            <i class="ri-file-code-line" />
-                                            <span class="txt">
-                                                Mutating <span
-                                                    style="font-weight: bold"
-                                                    >{getMutatorDescription(
-                                                        mutation.mutator
-                                                    )}</span
-                                                >
-                                                in {mutation.file}:{mutation.line}
-                                                does not break the tests
-                                            </span>
-                                        </div>
-
-                                        <div class="flex-fill" />
-                                        <span class="label"
-                                            >{mutation.mutator}</span
-                                        >
-                                    </svelte:fragment>
-                                    <div class="form-field">
-                                        <Highlight
-                                            language={diff}
-                                            code={mutation.diff}
-                                        />
-
-                                        <a
-                                            href={`https://github.com/${pr.head_repo}/blob/${pr.head}/${mutation.file}#L${mutation.line}`}
-                                            target="_blank"
-                                            class="context-button btn btn-secondary btn-sm"
-                                            >Open context</a
-                                        >
-                                        <div class="help-block m-0">
-                                            Apply this patch to your code with <code
-                                                >patch -p0 {"<"} patch.diff</code
-                                            >.
-                                        </div>
-                                    </div>
-
-                                    <!-- vote for mutation, good or not -->
-                                    {#key mutation.vote}
-                                        <div class="form-field" class:m-0={user}>
-                                            <button
-                                                type="button"
-                                                class="btn"
-                                                disabled={!user}
-                                                class:btn-primary={votes[
-                                                    mutation.id
-                                                ] === "must_fix"}
-                                                class:btn-secondary={votes[
-                                                    mutation.id
-                                                ] !== "must_fix"}
-                                                use:tooltip={{
-                                                    text: "This mutation should be fixed",
-                                                    position: "top",
-                                                }}
-                                                on:click={() =>
-                                                    voteForMutation(
-                                                        mutation.id,
-                                                        "must_fix"
-                                                    )}
-                                            >
-                                                <i class="ri-thumb-up-line" />
-                                                Must fix
-                                            </button>
-                                            <button
-                                                type="button"
-                                                class="btn"
-                                                disabled={!user}
-                                                class:btn-primary={votes[
-                                                    mutation.id
-                                                ] === "ignore"}
-                                                class:btn-secondary={votes[
-                                                    mutation.id
-                                                ] !== "ignore"}
-                                                use:tooltip={{
-                                                    text: "This mutation is not relevant for this PR",
-                                                    position: "top",
-                                                }}
-                                                on:click={() =>
-                                                    voteForMutation(
-                                                        mutation.id,
-                                                        "ignore"
-                                                    )}
-                                            >
-                                                <i class="ri-thumb-down-line" />
-                                                Ignore
-                                            </button>
-                                        </div>
-                                    {#if !user}
-                                        <div class="alert alert-info m-0">
-                                            <i class="ri-information-line" /> Login to vote for
-                                            mutations
-                                        </div>
-                                    {/if}
-                                    {/key}
-                                </Accordion>
-                            {/each}
                         </div>
-                    {/key}
-                {/if}
-            </div>
+                    {/if}
+                    {#if pr.mutation_commit || mutations?.length > 0}
+                        <div class="flex">
+                            <h1>Mutation testing</h1>
+                            <span
+                                class="label"
+                                class:label-success={pr.mutation_ratio >= 0.8}
+                                class:label-warning={pr.mutation_ratio > 0.5 &&
+                                    pr.mutation_ratio < 0.8}
+                                class:label-danger={pr.mutation_ratio < 0.5}
+                                use:tooltip={{
+                                    text: `${(pr.mutation_ratio * 100).toFixed(
+                                        2
+                                    )}% of generated mutations where killed`,
+                                    position: "top",
+                                }}>{(pr.mutation_ratio * 100).toFixed(2)}%</span
+                            >
+                            {#if hasExpanded["mutations"]}
+                                <button
+                                    type="button"
+                                    class="btn btn-sm btn-primary"
+                                    on:click={() => collapseAll("mutations")}
+                                >
+                                    <i class="ri-arrow-up-s-line" />
+                                    Collapse all
+                                </button>
+                            {:else}
+                                <button
+                                    type="button"
+                                    class="btn btn-sm btn-primary"
+                                    on:click={() => expandAll("mutations")}
+                                >
+                                    <i class="ri-arrow-down-s-line" />
+                                    Expand all
+                                </button>
+                            {/if}
+                        </div>
+                        <div class="clearfix m-b-base" />
+                        {#key mutations}
+                            {#if mutations?.length === 0 && pr.is_done_mutating}
+                                <div
+                                    class="alert alert-success"
+                                    style="text-align: center"
+                                >
+                                    <i class="ri-information-line" /> No mutations
+                                    survived.
+                                </div>
+                            {/if}
+                            {#if mutations?.length === 0 && !pr.is_done_mutating}
+                                <div
+                                    class="alert alert-info"
+                                    style="text-align: center"
+                                >
+                                    <i class="ri-information-line" /> No mutations
+                                    generated yet.
+                                </div>
+                            {/if}
+                            <div class="accordions mutations">
+                                {#each mutations as mutation}
+                                    <Accordion>
+                                        <svelte:fragment slot="header">
+                                            <div class="inline-flex">
+                                                <i class="ri-file-code-line" />
+                                                <span class="txt">
+                                                    Mutating <span
+                                                        style="font-weight: bold"
+                                                        >{getMutatorDescription(
+                                                            mutation.mutator
+                                                        )}</span
+                                                    >
+                                                    in {mutation.file}:{mutation.line}
+                                                    does not break the tests
+                                                </span>
+                                            </div>
+
+                                            <div class="flex-fill" />
+                                            <span class="label"
+                                                >{mutation.mutator}</span
+                                            >
+                                        </svelte:fragment>
+                                        <div class="form-field">
+                                            <Highlight
+                                                language={diff}
+                                                code={mutation.diff}
+                                            />
+
+                                            <a
+                                                href={`https://github.com/${pr.head_repo}/blob/${pr.head}/${mutation.file}#L${mutation.line}`}
+                                                target="_blank"
+                                                class="context-button btn btn-secondary btn-sm"
+                                                >Open context</a
+                                            >
+                                            <div class="help-block m-0">
+                                                Apply this patch to your code
+                                                with <code
+                                                    >patch -p0 {"<"} patch.diff</code
+                                                >.
+                                            </div>
+                                        </div>
+
+                                        <!-- vote for mutation, good or not -->
+                                        {#key mutation.vote}
+                                            <div
+                                                class="form-field"
+                                                class:m-0={user}
+                                            >
+                                                <button
+                                                    type="button"
+                                                    class="btn"
+                                                    disabled={!user}
+                                                    class:btn-primary={votes[
+                                                        mutation.id
+                                                    ] === "must_fix"}
+                                                    class:btn-secondary={votes[
+                                                        mutation.id
+                                                    ] !== "must_fix"}
+                                                    use:tooltip={{
+                                                        text: "This mutation should be fixed",
+                                                        position: "top",
+                                                    }}
+                                                    on:click={() =>
+                                                        voteForMutation(
+                                                            mutation.id,
+                                                            "must_fix"
+                                                        )}
+                                                >
+                                                    <i
+                                                        class="ri-thumb-up-line"
+                                                    />
+                                                    Must fix
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    class="btn"
+                                                    disabled={!user}
+                                                    class:btn-primary={votes[
+                                                        mutation.id
+                                                    ] === "ignore"}
+                                                    class:btn-secondary={votes[
+                                                        mutation.id
+                                                    ] !== "ignore"}
+                                                    use:tooltip={{
+                                                        text: "This mutation is not relevant for this PR",
+                                                        position: "top",
+                                                    }}
+                                                    on:click={() =>
+                                                        voteForMutation(
+                                                            mutation.id,
+                                                            "ignore"
+                                                        )}
+                                                >
+                                                    <i
+                                                        class="ri-thumb-down-line"
+                                                    />
+                                                    Ignore
+                                                </button>
+                                            </div>
+                                            {#if !user}
+                                                <div
+                                                    class="alert alert-info m-0"
+                                                >
+                                                    <i
+                                                        class="ri-information-line"
+                                                    /> Login to vote for mutations
+                                                </div>
+                                            {/if}
+                                        {/key}
+                                    </Accordion>
+                                {/each}
+                            </div>
+                        {/key}
+                    {/if}
+                </div>
             {/if}
             {#if coverage === null && !hasRunningJob()}
                 <div class="alert alert-info" style="text-align: center">
-                    <i class="ri-information-line" /> No coverage data available for
-                    this pull request and commit.
+                    <i class="ri-information-line" /> No coverage data available
+                    for this pull request and commit.
                 </div>
             {/if}
+        </div>
+        <div class="clearfix m-b-base" />
+        <div class="cov-container flex flex-justify-between flex-align-start">
+            <div class="cov-col">
+                <h1>Sonarcloud <span class="label label-secondary">Experimental</span></h1>
+                <div class="clearfix m-b-base" />
+
+                <div class="accordions sonarcloud">
+                    {#each sonarcloud.issues.sort((a, b) => {
+                        if (a.severity === "BLOCKER") return -1;
+                        if (b.severity === "BLOCKER") return 1;
+                        if (a.severity === "CRITICAL") return -1;
+                        if (b.severity === "CRITICAL") return 1;
+                        if (a.severity === "MAJOR") return -1;
+                        if (b.severity === "MAJOR") return 1;
+                        if (a.severity === "MINOR") return -1;
+                        if (b.severity === "MINOR") return 1;
+                        if (a.severity === "INFO") return -1;
+                        if (b.severity === "INFO") return 1;
+                        return 0;
+                    }) as issue}
+                        <Accordion>
+                            <svelte:fragment slot="header">
+                                <div class="inline-flex">
+                                    <i class="ri-file-code-line" />
+                                    <span class="txt">
+                                        {issue.message}
+                                    </span>
+                                </div>
+
+                                <div class="flex-fill" />
+                                <span
+                                    class="label"
+                                    class:label-success={issue.severity ===
+                                        "BLOCKER"}
+                                    class:label-warning={issue.severity ===
+                                        "CRITICAL"}
+                                    class:label-danger={issue.severity ===
+                                        "MAJOR"}
+                                    class:label-info={issue.severity ===
+                                        "MINOR"}
+                                    class:label-secondary={issue.severity ===
+                                        "INFO"}>{issue.severity}</span
+                                >
+                            </svelte:fragment>
+                            <div class="form-field m-b-0">
+                                <pre><div class="code"><span class="filename">{issue.component.split(":")[1]}</span>
+{#each issue.sources as line}<div
+                                            class="line"><span
+                                                class="line-number txt-mono"
+                                                >{line.line}</span
+                                            ><span
+                                                class="txt-mono"
+                                                class:highlight={line.line >= issue.textRange.startLine && line.line <= issue.textRange.endLine}
+                                                >{@html line.code}</span
+                                            ></div>{/each}</div></pre>
+                                
+                                            <!-- https://sonarcloud.io/project/issues?&sinceLeakPeriod=true&branch=26415&id=aureleoules_bitcoin&open=AYsFGxvQ890w8U3JDlEV -->
+                                            <a class="btn btn-primary btn-sm" href="https://sonarcloud.io/project/issues?id=aureleoules_bitcoin&branch={$page.params.number}&resolved=false&open={issue.key}" target="_blank"
+                                            >Open in SonarCloud</a>
+                            </div>
+                        </Accordion>
+                    {/each}
+                </div>
+            </div>
         </div>
         <div class="clearfix m-b-base" />
     </main>
 </div>
 
 <style lang="scss">
-
     .cov-container {
         @media (max-width: 1100px) {
             flex-direction: column;
 
             .cov-col {
-                width: 100%!important;
+                width: 100% !important;
             }
         }
         .cov-col {
@@ -549,6 +625,20 @@
         border-radius: 0.25rem;
         margin-bottom: 1rem;
         overflow: auto;
+    }
+
+    .highlight {
+        background-color: #e97373;
+    }
+
+    .filename {
+        margin-bottom: 0.5rem;
+        background-color: #2f2f30;
+        color: #fff;
+        padding: 0.1rem 0.5rem;
+        font-size: 0.8rem;
+        border-radius: 0.5rem;
+        display: inline-block;
     }
 
     .line {
