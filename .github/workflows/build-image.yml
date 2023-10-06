@@ -25,3 +25,6 @@ jobs:
         platforms: linux/arm64
         push: true
         tags: aureleoules/bitcoin-coverage-ui:latest
+    - name: Trigger deployment GitHub action webhook
+      run: |
+        curl -X POST -H "Accept: application/vnd.github.everest-preview+json" -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" "https://api.github.com/repos/corecheck/deployment/dispatches" -d '{"event_type": "deploy"}'
