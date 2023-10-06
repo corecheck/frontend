@@ -343,7 +343,6 @@
                         </div>
                     {/key}
                 </div>
-            {/if}
             <div class="cov-col">
                 {#if pr.has_coverage && pr.mutations_generated > 0 && pr.coverage_commit != pr.mutation_commit}
                 <div class="alert alert-info" style="text-align: center">
@@ -505,6 +504,12 @@
                     {/key}
                 {/if}
             </div>
+            {:else}
+                <div class="alert alert-info" style="text-align: center">
+                    <i class="ri-information-line" /> No coverage data available for
+                    this pull request and commit.
+                </div>
+            {/if}
         </div>
         <div class="clearfix m-b-base" />
     </main>
