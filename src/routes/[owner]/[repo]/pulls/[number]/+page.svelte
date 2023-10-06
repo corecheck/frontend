@@ -537,70 +537,92 @@
             {/if}
         </div>
         <div class="clearfix m-b-base" />
-        <div class="cov-container flex flex-justify-between flex-align-start">
-            <div class="cov-col">
-                <h1>Sonarcloud <span class="label label-secondary">Experimental</span></h1>
-                <div class="clearfix m-b-base" />
+        {#if coverage !== null}
+            <div
+                class="cov-container flex flex-justify-between flex-align-start"
+            >
+                <div class="cov-col">
+                    <h1>
+                        Sonarcloud <span class="label label-secondary"
+                            >Experimental</span
+                        >
+                    </h1>
+                    <div class="clearfix m-b-base" />
 
-                <div class="accordions sonarcloud">
-                    {#each sonarcloud.issues.sort((a, b) => {
-                        if (a.severity === "BLOCKER") return -1;
-                        if (b.severity === "BLOCKER") return 1;
-                        if (a.severity === "CRITICAL") return -1;
-                        if (b.severity === "CRITICAL") return 1;
-                        if (a.severity === "MAJOR") return -1;
-                        if (b.severity === "MAJOR") return 1;
-                        if (a.severity === "MINOR") return -1;
-                        if (b.severity === "MINOR") return 1;
-                        if (a.severity === "INFO") return -1;
-                        if (b.severity === "INFO") return 1;
-                        return 0;
-                    }) as issue}
-                        <Accordion>
-                            <svelte:fragment slot="header">
-                                <div class="inline-flex">
-                                    <i class="ri-file-code-line" />
-                                    <span class="txt">
-                                        {issue.message}
-                                    </span>
+                    <div class="accordions sonarcloud">
+                        {#each sonarcloud.issues.sort((a, b) => {
+                            if (a.severity === "BLOCKER") return -1;
+                            if (b.severity === "BLOCKER") return 1;
+                            if (a.severity === "CRITICAL") return -1;
+                            if (b.severity === "CRITICAL") return 1;
+                            if (a.severity === "MAJOR") return -1;
+                            if (b.severity === "MAJOR") return 1;
+                            if (a.severity === "MINOR") return -1;
+                            if (b.severity === "MINOR") return 1;
+                            if (a.severity === "INFO") return -1;
+                            if (b.severity === "INFO") return 1;
+                            return 0;
+                        }) as issue}
+                            <Accordion>
+                                <svelte:fragment slot="header">
+                                    <div class="inline-flex">
+                                        <i class="ri-file-code-line" />
+                                        <span class="txt">
+                                            {issue.message}
+                                        </span>
+                                    </div>
+
+                                    <div class="flex-fill" />
+                                    <span
+                                        class="label"
+                                        class:label-success={issue.severity ===
+                                            "BLOCKER"}
+                                        class:label-warning={issue.severity ===
+                                            "CRITICAL"}
+                                        class:label-danger={issue.severity ===
+                                            "MAJOR"}
+                                        class:label-info={issue.severity ===
+                                            "MINOR"}
+                                        class:label-secondary={issue.severity ===
+                                            "INFO"}>{issue.severity}</span
+                                    >
+                                </svelte:fragment>
+                                <div class="form-field m-b-0">
+                                    <pre><div class="code"><span
+                                                class="filename"
+                                                >{issue.component.split(
+                                                    ":"
+                                                )[1]}</span
+                                            >
+{#each issue.sources as line}<div class="line"><span
+                                                        class="line-number txt-mono"
+                                                        >{line.line}</span
+                                                    ><span
+                                                        class="txt-mono"
+                                                        class:highlight={line.line >=
+                                                            issue.textRange
+                                                                .startLine &&
+                                                            line.line <=
+                                                                issue.textRange
+                                                                    .endLine}
+                                                        >{@html line.code}</span
+                                                    ></div>{/each}</div></pre>
+
+                                    <!-- https://sonarcloud.io/project/issues?&sinceLeakPeriod=true&branch=26415&id=aureleoules_bitcoin&open=AYsFGxvQ890w8U3JDlEV -->
+                                    <a
+                                        class="btn btn-primary btn-sm"
+                                        href="https://sonarcloud.io/project/issues?id=aureleoules_bitcoin&branch={$page
+                                            .params
+                                            .number}&resolved=false&open={issue.key}"
+                                        target="_blank">Open in SonarCloud</a
+                                    >
                                 </div>
-
-                                <div class="flex-fill" />
-                                <span
-                                    class="label"
-                                    class:label-success={issue.severity ===
-                                        "BLOCKER"}
-                                    class:label-warning={issue.severity ===
-                                        "CRITICAL"}
-                                    class:label-danger={issue.severity ===
-                                        "MAJOR"}
-                                    class:label-info={issue.severity ===
-                                        "MINOR"}
-                                    class:label-secondary={issue.severity ===
-                                        "INFO"}>{issue.severity}</span
-                                >
-                            </svelte:fragment>
-                            <div class="form-field m-b-0">
-                                <pre><div class="code"><span class="filename">{issue.component.split(":")[1]}</span>
-{#each issue.sources as line}<div
-                                            class="line"><span
-                                                class="line-number txt-mono"
-                                                >{line.line}</span
-                                            ><span
-                                                class="txt-mono"
-                                                class:highlight={line.line >= issue.textRange.startLine && line.line <= issue.textRange.endLine}
-                                                >{@html line.code}</span
-                                            ></div>{/each}</div></pre>
-                                
-                                            <!-- https://sonarcloud.io/project/issues?&sinceLeakPeriod=true&branch=26415&id=aureleoules_bitcoin&open=AYsFGxvQ890w8U3JDlEV -->
-                                            <a class="btn btn-primary btn-sm" href="https://sonarcloud.io/project/issues?id=aureleoules_bitcoin&branch={$page.params.number}&resolved=false&open={issue.key}" target="_blank"
-                                            >Open in SonarCloud</a>
-                            </div>
-                        </Accordion>
-                    {/each}
+                            </Accordion>
+                        {/each}
+                    </div>
                 </div>
             </div>
-        </div>
+        {/if}
         <div class="clearfix m-b-base" />
     </main>
 </div>
