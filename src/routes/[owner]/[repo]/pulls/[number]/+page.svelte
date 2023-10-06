@@ -351,7 +351,7 @@
                 <div class="alert alert-info" style="text-align: center">
                     <i class="ri-information-line" /> Mutation testing is available for
                     this PR.
-                    <button type="button" class="btn btn-primary" disabled:{disableMutationButton} on:click={startMutationTesting}>
+                    <button type="button" class="btn btn-primary" disabled={disableMutationButton} on:click={startMutationTesting}>
                         Start mutation testing
                     </button>
                 </div>
@@ -394,12 +394,21 @@
                     </div>
                     <div class="clearfix m-b-base" />
                     {#key mutations}
-                        {#if mutations?.length === 0}
+                        {#if mutations?.length === 0 && pr.is_done_mutating}
                             <div
                                 class="alert alert-success"
                                 style="text-align: center"
                             >
-                                <i class="ri-information-line" /> No mutations survived
+                                <i class="ri-information-line" /> No mutations survived.
+                            </div>
+                        {/if}
+                        {#if mutations?.length === 0 && !pr.is_done_mutating}
+                            <div
+                                class="alert alert-info"
+                                style="text-align: center"
+                            >
+                                <i class="ri-information-line" /> No mutations generated
+                                yet.
                             </div>
                         {/if}
                         <div class="accordions mutations">
