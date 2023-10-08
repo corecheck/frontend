@@ -32,7 +32,7 @@ export async function _fetchMutations(fetch, number: number) {
 
 export async function _fetchSonarCloudIssues(fetch, number) {
     // https://sonarcloud.io/api/issues/search?metricKeys=sqale_index&projects=aureleoules_bitcoin&types=CODE_SMELL&branch=26415
-    return fetch(`https://sonarcloud.io/api/issues/search?metricKeys=sqale_index&projects=aureleoules_bitcoin&types=CODE_SMELL&branch=${number}`)
+    return fetch(`https://sonarcloud.io/api/issues/search?metricKeys=sqale_index&resolved=false&projects=aureleoules_bitcoin&types=CODE_SMELL&branch=${number}`)
         .then(async res => {
             if (res.status === 200) {
                 const data = await res.json();
