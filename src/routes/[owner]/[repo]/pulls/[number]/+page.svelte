@@ -340,21 +340,25 @@
                 </div>
                 <div class="cov-col">
                     {#if pr.has_coverage && pr.coverage_commit != pr.mutation_commit && !hasRunningJob()}
-                        <div
-                            class="alert alert-info"
-                            style="text-align: center"
-                        >
-                            <i class="ri-information-line" /> Mutation testing
-                            is available for this PR.
-                            <button
-                                type="button"
-                                class="btn btn-primary"
-                                disabled={disableMutationButton}
-                                on:click={startMutationTesting}
-                            >
-                                Start mutation testing
-                            </button>
-                        </div>
+                        {#if user}
+                            <div class="alert alert-info" style="text-align: center">
+                                <i class="ri-information-line" /> Mutation testing
+                                is available for this PR.
+                                <button
+                                    type="button"
+                                    class="btn btn-primary"
+                                    disabled={disableMutationButton}
+                                    on:click={startMutationTesting}
+                                >
+                                    Start mutation testing
+                                </button>
+                            </div>
+                        {:else}
+                            <div class="alert alert-info" style="text-align: center">
+                                <i class="ri-information-line" /> Login to start
+                                mutation testing
+                            </div>
+                        {/if}
                     {/if}
                     {#if pr.mutation_commit || mutations?.length > 0}
                         <div class="flex">
