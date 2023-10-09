@@ -339,7 +339,7 @@
                     {/key}
                 </div>
                 <div class="cov-col">
-                    {#if pr.has_coverage && pr.mutations_generated > 0 && pr.coverage_commit != pr.mutation_commit && !hasRunningJob()}
+                    {#if pr.has_coverage && pr.coverage_commit != pr.mutation_commit && !hasRunningJob()}
                         <div
                             class="alert alert-info"
                             style="text-align: center"
