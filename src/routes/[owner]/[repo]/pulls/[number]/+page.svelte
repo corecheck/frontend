@@ -9,18 +9,13 @@
     import { env } from "$env/dynamic/public";
     import { getContext } from "svelte";
     import { invalidateAll } from "$app/navigation";
+    import Select from "@/components/base/Select.svelte";
+    import CoverageReportSelectOption from "./CoverageReportSelectOption.svelte";
     const pageTitle = "Pull requests";
     export let data;
     let { pr, sonarcloud } = data;
     console.log(pr);
-    const coverage = pr.reports.length > 0 ? pr.reports.find((r) => r.commit === pr.head) || pr.reports[0] : {};
-
-    function hasRunningJob() {
-        return pr.jobs?.some(
-            (job) =>
-                job.aws_status !== "SUCCEEDED" && job.aws_status !== "FAILED"
-        );
-    }
+    let coverage = pr.reports.length > 0 ? pr.reports.find((r) => r.commit === pr.head) || pr.reports[0] : null;
 
     let hasExpanded = {
         coverage: false,
@@ -98,24 +93,33 @@
             </h1>
 
             <div class="clearfix m-b-base" />
-            {#if hasRunningJob()}
-                <div class="alert alert-warning" style="text-align: center">
-                    <i class="ri-information-line" /> A coverage analysis job is
-                    currently running, please come back later.
-                </div>
-            {/if}
+
+            <Field class="form-field" name="coverage" let:uniqueId>
+                <label for={uniqueId}>
+                    <i class="ri-file-code-line" />
+                    <span class="txt">Coverage report</span>
+                </label>
+                <Select
+                    id={uniqueId}
+                    toggle={true}
+                    items={pr.reports}
+                    bind:selected={coverage}
+                    labelComponent={CoverageReportSelectOption}
+                    optionComponent={CoverageReportSelectOption}
+                />
+            </Field>
         </div>
         <div class="clearfix m-b-base" />
         <div class="cov-container flex flex-justify-between flex-align-start">
-            {#if pr.reports.length > 0}
+            {#if coverage && coverage.status !== "pending"}
                 <div class="cov-col">
                     <div class="flex">
                         <h1>Coverage</h1>
                         <span
                             class="label"
                             class:label-success={coverage.coverage_ratio >= 0.8}
-                            class:label-warning={coverage.coverage_ratio > 0.5 &&
-                                coverage.coverage_ratio < 0.8}
+                            class:label-warning={coverage.coverage_ratio >
+                                0.5 && coverage.coverage_ratio < 0.8}
                             class:label-danger={coverage.ratio < 0.5}
                             >{(coverage.coverage_ratio * 100).toFixed(2)}%</span
                         >
@@ -141,7 +145,7 @@
                     </div>
                     <div class="clearfix m-b-base" />
                     {#key coverage}
-                        {#if coverage.coverage_lines?.length === 0}
+                        {#if coverage && coverage.coverage_lines?.length === 0}
                             <div
                                 class="alert alert-success"
                                 style="text-align: center"
@@ -169,7 +173,7 @@
                                             class:label-danger={file.tested_ratio <
                                                 0.5}
                                             >{(file.tested_ratio * 100).toFixed(
-                                                0
+                                                0,
                                             )}%</span
                                         >
                                     </svelte:fragment>
@@ -183,7 +187,7 @@
                                                             >{line.line_number} </a><span
                                                             use:tooltip={{
                                                                 text: getLineTooltip(
-                                                                    line
+                                                                    line,
                                                                 ),
                                                                 position: "top",
                                                             }}
@@ -258,7 +262,7 @@
                                     <pre><div class="code"><span
                                                 class="filename"
                                                 >{issue.component.split(
-                                                    ":"
+                                                    ":",
                                                 )[1]}</span
                                             >
 {#each issue.sources as line}<div class="line"><span
@@ -289,10 +293,15 @@
                     </div>
                 </div>
             {/if}
-            {#if coverage === null && !hasRunningJob()}
+            {#if coverage && coverage.status === "pending"}
+                <div class="alert alert-warning" style="text-align: center">
+                    <i class="ri-information-line" /> Coverage report is
+                    currently being generated, please come back later.
+                </div>
+            {/if}
+            {#if !coverage}
                 <div class="alert alert-info" style="text-align: center">
-                    <i class="ri-information-line" /> No coverage data available
-                    for this pull request and commit.
+                    <i class="ri-information-line" /> No coverage data available.
                 </div>
             {/if}
         </div>
