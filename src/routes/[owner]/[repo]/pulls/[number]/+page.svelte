@@ -11,39 +11,9 @@
     import { invalidateAll } from "$app/navigation";
     const pageTitle = "Pull requests";
     export let data;
-    let { pr, coverage, mutations, votes, sonarcloud } = data;
-
-    function startCoverage() {
-        fetch(`${env.PUBLIC_ENDPOINT}/pr/${$page.params.number}/analyze`, {
-            method: "POST",
-            withCredentials: true,
-            credentials: "include",
-        })
-            .then((res) => {
-                invalidateAll();
-                window.location.reload();
-            })
-            .catch((err) => {
-                console.error(err);
-            });
-    }
-
-    let disableMutationButton = false;
-    function startMutationTesting() {
-        disableMutationButton = true;
-        fetch(`${env.PUBLIC_ENDPOINT}/pr/${$page.params.number}/mutate`, {
-            method: "POST",
-            withCredentials: true,
-            credentials: "include",
-        })
-            .then((res) => {
-                invalidateAll();
-                window.location.reload();
-            })
-            .catch((err) => {
-                console.error(err);
-            });
-    }
+    let { pr, sonarcloud } = data;
+    console.log(pr);
+    const coverage = pr.reports.length > 0 ? pr.reports.find((r) => r.commit === pr.head) || pr.reports[0] : {};
 
     function hasRunningJob() {
         return pr.jobs?.some(
@@ -54,7 +24,6 @@
 
     let hasExpanded = {
         coverage: false,
-        mutations: false,
     };
 
     function expandAll(accType: string) {
@@ -83,63 +52,6 @@
         }
 
         hasExpanded[accType] = false;
-    }
-
-    function getMutatorDescription(mutator) {
-        switch (mutator) {
-            case "mutator-true-to-false":
-                return "'true' to 'false'";
-            case "mutator-false-to-true":
-                return "'false' to 'true'";
-            case "mutator-or-to-and":
-                return "'||' to '&&'";
-            case "mutator-and-to-or":
-                return "'&&' to '||'";
-            case "mutator-greater-to-less":
-                return "'>' to '<'";
-            case "mutator-less-to-greater":
-                return "'<' to '>'";
-            case "mutator-less-eq-to-greater-eq":
-                return "'<=' to '>='";
-            case "mutator-greater-eq-to-less-eq":
-                return "'>=' to '<='";
-            case "mutator-eq-to-neq":
-                return "'==' to '!='";
-            case "mutator-neq-to-eq":
-                return "'!=' to '=='";
-        }
-
-        return "Unknown";
-    }
-
-    function isOutdated() {
-        return pr.coverage_commit !== pr.head;
-    }
-
-    function voteForMutation(id, vote) {
-        if (votes[id] === vote) {
-            vote = "none";
-        }
-        fetch(
-            `${env.PUBLIC_ENDPOINT}/pr/${$page.params.number}/mutation/${id}/vote`,
-            {
-                method: "PUT",
-                body: JSON.stringify({
-                    vote,
-                }),
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                withCredentials: true,
-                credentials: "include",
-            }
-        )
-            .then((res) => {
-                votes[id] = vote;
-            })
-            .catch((err) => {
-                console.error(err);
-            });
     }
 
     function getLineTooltip(line) {
@@ -183,23 +95,6 @@
                 >
                     {pr.title}
                 </a>
-
-                {#if pr.has_coverage}
-                    <span
-                        class="label"
-                        class:label-warning={isOutdated()}
-                        class:label-success={!isOutdated()}
-                        use:tooltip={{
-                            text: isOutdated()
-                                ? "Coverage data is out of date"
-                                : "Coverage data is up to date",
-                            position: "top",
-                        }}
-                        >{isOutdated()
-                            ? "Outdated coverage"
-                            : "Up to date"}</span
-                    >
-                {/if}
             </h1>
 
             <div class="clearfix m-b-base" />
@@ -209,45 +104,20 @@
                     currently running, please come back later.
                 </div>
             {/if}
-
-            {#if !hasRunningJob() && (!pr.has_coverage || isOutdated())}
-                <div class="alert alert-info" style="text-align: center">
-                    {#if pr.has_coverage && isOutdated()}
-                        <i class="ri-information-line" /> Coverage data is out of
-                        date. Please re-run the coverage analysis.
-                    {:else}
-                        <i class="ri-information-line" /> No coverage data available
-                        for this PR.
-                    {/if}
-                    {#if user}
-                        <button
-                            type="button"
-                            class="btn btn-primary"
-                            on:click={startCoverage}
-                        >
-                            Start coverage analysis
-                        </button>
-                    {:else}
-                        <a class="btn btn-primary" href="/login">
-                            Login to start coverage analysis
-                        </a>
-                    {/if}
-                </div>
-            {/if}
         </div>
         <div class="clearfix m-b-base" />
         <div class="cov-container flex flex-justify-between flex-align-start">
-            {#if coverage !== null}
+            {#if pr.reports.length > 0}
                 <div class="cov-col">
                     <div class="flex">
                         <h1>Coverage</h1>
                         <span
                             class="label"
-                            class:label-success={pr.coverage_ratio >= 0.8}
-                            class:label-warning={pr.coverage_ratio > 0.5 &&
-                                pr.coverage_ratio < 0.8}
-                            class:label-danger={pr.coverage_ratio < 0.5}
-                            >{(pr.coverage_ratio * 100).toFixed(2)}%</span
+                            class:label-success={coverage.coverage_ratio >= 0.8}
+                            class:label-warning={coverage.coverage_ratio > 0.5 &&
+                                coverage.coverage_ratio < 0.8}
+                            class:label-danger={coverage.ratio < 0.5}
+                            >{(coverage.coverage_ratio * 100).toFixed(2)}%</span
                         >
                         {#if hasExpanded["coverage"]}
                             <button
@@ -271,7 +141,7 @@
                     </div>
                     <div class="clearfix m-b-base" />
                     {#key coverage}
-                        {#if coverage?.length === 0}
+                        {#if coverage.coverage_lines?.length === 0}
                             <div
                                 class="alert alert-success"
                                 style="text-align: center"
@@ -281,7 +151,7 @@
                             </div>
                         {/if}
                         <div class="accordions coverage">
-                            {#each coverage as file}
+                            {#each coverage.coverage_files as file}
                                 <Accordion>
                                     <svelte:fragment slot="header">
                                         <div class="inline-flex">
@@ -338,213 +208,6 @@
                         </div>
                     {/key}
                 </div>
-                <div class="cov-col">
-                    {#if pr.has_coverage && pr.coverage_commit != pr.mutation_commit && !hasRunningJob()}
-                        {#if user}
-                            <div class="alert alert-info" style="text-align: center">
-                                <i class="ri-information-line" /> Mutation testing
-                                is available for this PR.
-                                <button
-                                    type="button"
-                                    class="btn btn-primary"
-                                    disabled={disableMutationButton}
-                                    on:click={startMutationTesting}
-                                >
-                                    Start mutation testing
-                                </button>
-                            </div>
-                        {:else}
-                            <div class="alert alert-info" style="text-align: center">
-                                <i class="ri-information-line" /> Login to start
-                                mutation testing
-                            </div>
-                        {/if}
-                    {/if}
-                    {#if pr.mutation_commit || mutations?.length > 0}
-                        <div class="flex">
-                            <h1>Mutation testing</h1>
-                            <span
-                                class="label"
-                                class:label-success={pr.mutation_ratio >= 0.8}
-                                class:label-warning={pr.mutation_ratio > 0.5 &&
-                                    pr.mutation_ratio < 0.8}
-                                class:label-danger={pr.mutation_ratio < 0.5}
-                                use:tooltip={{
-                                    text: `${(pr.mutation_ratio * 100).toFixed(
-                                        2
-                                    )}% of generated mutations where killed`,
-                                    position: "top",
-                                }}>{(pr.mutation_ratio * 100).toFixed(2)}%</span
-                            >
-                            {#if hasExpanded["mutations"]}
-                                <button
-                                    type="button"
-                                    class="btn btn-sm btn-primary"
-                                    on:click={() => collapseAll("mutations")}
-                                >
-                                    <i class="ri-arrow-up-s-line" />
-                                    Collapse all
-                                </button>
-                            {:else}
-                                <button
-                                    type="button"
-                                    class="btn btn-sm btn-primary"
-                                    on:click={() => expandAll("mutations")}
-                                >
-                                    <i class="ri-arrow-down-s-line" />
-                                    Expand all
-                                </button>
-                            {/if}
-                        </div>
-                        <div class="clearfix m-b-base" />
-                        {#key mutations}
-                            {#if mutations?.length === 0 && pr.is_done_mutating}
-                                <div
-                                    class="alert alert-success"
-                                    style="text-align: center"
-                                >
-                                    <i class="ri-information-line" /> No mutations
-                                    survived.
-                                </div>
-                            {/if}
-                            {#if mutations?.length === 0 && !pr.is_done_mutating}
-                                <div
-                                    class="alert alert-info"
-                                    style="text-align: center"
-                                >
-                                    <i class="ri-information-line" /> No mutations
-                                    generated yet.
-                                </div>
-                            {/if}
-                            <div class="accordions mutations">
-                                {#each mutations as mutation}
-                                    <Accordion>
-                                        <svelte:fragment slot="header">
-                                            <div class="inline-flex">
-                                                <i class="ri-file-code-line" />
-                                                <span class="txt">
-                                                    Mutating <span
-                                                        style="font-weight: bold"
-                                                        >{getMutatorDescription(
-                                                            mutation.mutator
-                                                        )}</span
-                                                    >
-                                                    in {mutation.file}:{mutation.line}
-                                                    does not break the tests
-                                                </span>
-                                            </div>
-
-                                            <div class="flex-fill" />
-                                            <span class="label"
-                                                >{mutation.mutator}</span
-                                            >
-                                        </svelte:fragment>
-                                        <div class="form-field">
-                                            <Highlight
-                                                language={diff}
-                                                code={mutation.diff}
-                                            />
-
-                                            <a
-                                                href={`https://github.com/${pr.head_repo}/blob/${pr.head}/${mutation.file}#L${mutation.line}`}
-                                                target="_blank"
-                                                class="context-button btn btn-secondary btn-sm"
-                                                >Open context</a
-                                            >
-                                            <div class="help-block m-0">
-                                                Apply this patch to your code
-                                                with <code
-                                                    >patch -p0 {"<"} patch.diff</code
-                                                >.
-                                            </div>
-                                        </div>
-
-                                        <!-- vote for mutation, good or not -->
-                                        {#key mutation.vote}
-                                            <div
-                                                class="form-field"
-                                                class:m-0={user}
-                                            >
-                                                <button
-                                                    type="button"
-                                                    class="btn"
-                                                    disabled={!user}
-                                                    class:btn-primary={votes[
-                                                        mutation.id
-                                                    ] === "must_fix"}
-                                                    class:btn-secondary={votes[
-                                                        mutation.id
-                                                    ] !== "must_fix"}
-                                                    use:tooltip={{
-                                                        text: "This mutation should be fixed",
-                                                        position: "top",
-                                                    }}
-                                                    on:click={() =>
-                                                        voteForMutation(
-                                                            mutation.id,
-                                                            "must_fix"
-                                                        )}
-                                                >
-                                                    <i
-                                                        class="ri-thumb-up-line"
-                                                    />
-                                                    Must fix
-                                                </button>
-                                                <button
-                                                    type="button"
-                                                    class="btn"
-                                                    disabled={!user}
-                                                    class:btn-primary={votes[
-                                                        mutation.id
-                                                    ] === "ignore"}
-                                                    class:btn-secondary={votes[
-                                                        mutation.id
-                                                    ] !== "ignore"}
-                                                    use:tooltip={{
-                                                        text: "This mutation is not relevant for this PR",
-                                                        position: "top",
-                                                    }}
-                                                    on:click={() =>
-                                                        voteForMutation(
-                                                            mutation.id,
-                                                            "ignore"
-                                                        )}
-                                                >
-                                                    <i
-                                                        class="ri-thumb-down-line"
-                                                    />
-                                                    Ignore
-                                                </button>
-                                            </div>
-                                            {#if !user}
-                                                <div
-                                                    class="alert alert-info m-0"
-                                                >
-                                                    <i
-                                                        class="ri-information-line"
-                                                    /> Login to vote for mutations
-                                                </div>
-                                            {/if}
-                                        {/key}
-                                    </Accordion>
-                                {/each}
-                            </div>
-                        {/key}
-                    {/if}
-                </div>
-            {/if}
-            {#if coverage === null && !hasRunningJob()}
-                <div class="alert alert-info" style="text-align: center">
-                    <i class="ri-information-line" /> No coverage data available
-                    for this pull request and commit.
-                </div>
-            {/if}
-        </div>
-        <div class="clearfix m-b-base" />
-        {#if coverage !== null}
-            <div
-                class="cov-container flex flex-justify-between flex-align-start"
-            >
                 <div class="cov-col">
                     <h1>
                         Sonarcloud <span class="label label-secondary"
@@ -625,8 +288,14 @@
                         {/each}
                     </div>
                 </div>
-            </div>
-        {/if}
+            {/if}
+            {#if coverage === null && !hasRunningJob()}
+                <div class="alert alert-info" style="text-align: center">
+                    <i class="ri-information-line" /> No coverage data available
+                    for this pull request and commit.
+                </div>
+            {/if}
+        </div>
         <div class="clearfix m-b-base" />
     </main>
 </div>

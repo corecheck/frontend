@@ -43,20 +43,6 @@
                     </div>
                 </SortHeader>
 
-                <SortHeader disable class="col-type-number col-field-number" name="number" bind:sort>
-                    <div class="col-header-content">
-                        <i class={CommonHelper.getFieldTypeIcon("number")} />
-                        <span class="txt">Coverage score</span>
-                    </div>
-                </SortHeader>
-                <SortHeader disable class="col-type-number col-field-number" name="number" bind:sort>
-                    <div class="col-header-content">
-                        <i class={CommonHelper.getFieldTypeIcon("number")} />
-                        <span class="txt">Mutation score</span>
-                    </div>
-                </SortHeader>
-
-
                 <SortHeader disable class="col-type-date col-field-created" name="created" bind:sort>
                     <div class="col-header-content">
                         <i class={CommonHelper.getFieldTypeIcon("date")} />
@@ -102,17 +88,6 @@
                         </span>
                     </td>
                     
-                    <td class="col-type-number col-field-number min-width">
-                        <span class="label" class:label-success={item.coverage_ratio >= 0.8} class:label-warning={item.coverage_ratio >= 0.6 && item.coverage_ratio < 0.8} class:label-danger={item.has_coverage && item.coverage_ratio < 0.6}>
-                            {item.has_coverage ? Math.round(item.coverage_ratio * 100) + '%' : "N/A"}
-                        </span>
-                    </td>
-                    <td class="col-type-number col-field-number min-width">
-                        <span class="label" class:label-success={item.mutation_ratio >= 0.8} class:label-warning={item.mutation_ratio >= 0.4 && item.mutation_ratio < 0.8} class:label-danger={item.is_done_mutating && item.mutation_ratio < 0.4}>
-                            {item.is_done_mutating ? Math.round(item.mutation_ratio * 100) + '%' : "N/A"}
-                        </span>
-                    </td>
-
                     <td class="col-type-date col-field-created">
                         <FormattedDate date={item.created_at} />
                     </td>
