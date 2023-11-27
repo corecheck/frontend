@@ -53,6 +53,6 @@ export async function load({ params, fetch }) {
 
     return {
         pr,
-        sonarcloud
+        sonarcloud,
     }
 }

@@ -5,6 +5,7 @@
     export let name;
     export let sort = "";
     export let disable = false;
+    export let colspan = 1;
 
     function toggleSort() {
         if (disable) {
