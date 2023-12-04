@@ -139,7 +139,7 @@
         averageScoreMaster /= masterBenchmark.length;
         averageScorePull /= coverage.benchmarks_grouped[benchmark].length;
 
-        return 1 - averageScorePull / averageScoreMaster;
+        return 1 - averageScoreMaster / averageScorePull;
     }
 
     const user = getContext("user");
