@@ -507,25 +507,25 @@
 
                                     if (!benchA || !benchB) return 0;
 
-                                    if (sort === "name") return a.localeCompare(b);
+                                    if (sort === "+name") return a.localeCompare(b);
                                     if (sort === "-name") return b.localeCompare(a);
 
-                                    if (sort === "diff") return getDiffMaster(a) - getDiffMaster(b);
+                                    if (sort === "+diff") return getDiffMaster(a) - getDiffMaster(b);
                                     if (sort === "-diff") return getDiffMaster(b) - getDiffMaster(a);
 
-                                    if (sort === "cpu-refs") return getCPUInstructionsAverage(coverage, a) - getCPUInstructionsAverage(coverage, b);
+                                    if (sort === "+cpu-refs") return getCPUInstructionsAverage(coverage, a) - getCPUInstructionsAverage(coverage, b);
                                     if (sort === "-cpu-refs") return getCPUInstructionsAverage(coverage, b) - getCPUInstructionsAverage(coverage, a);
-                                    if (sort === "cpu-refs-master") return getCPUInstructionsAverage(masterReport, a) - getCPUInstructionsAverage(masterReport, b);
+                                    if (sort === "+cpu-refs-master") return getCPUInstructionsAverage(masterReport, a) - getCPUInstructionsAverage(masterReport, b);
                                     if (sort === "-cpu-refs-master") return getCPUInstructionsAverage(masterReport, b) - getCPUInstructionsAverage(masterReport, a);
 
-                                    if (sort === "data-reads") return getDataReadsAverage(coverage, a) - getDataReadsAverage(coverage, b);
+                                    if (sort === "+data-reads") return getDataReadsAverage(coverage, a) - getDataReadsAverage(coverage, b);
                                     if (sort === "-data-reads") return getDataReadsAverage(coverage, b) - getDataReadsAverage(coverage, a);
-                                    if (sort === "data-reads-master") return getDataReadsAverage(masterReport, a) - getDataReadsAverage(masterReport, b);
+                                    if (sort === "+data-reads-master") return getDataReadsAverage(masterReport, a) - getDataReadsAverage(masterReport, b);
                                     if (sort === "-data-reads-master") return getDataReadsAverage(masterReport, b) - getDataReadsAverage(masterReport, a);
 
-                                    if (sort === "data-writes") return getDataWritesAverage(coverage, a) - getDataWritesAverage(coverage, b);
+                                    if (sort === "+data-writes") return getDataWritesAverage(coverage, a) - getDataWritesAverage(coverage, b);
                                     if (sort === "-data-writes") return getDataWritesAverage(coverage, b) - getDataWritesAverage(coverage, a);
-                                    if (sort === "data-writes-master") return getDataWritesAverage(masterReport, a) - getDataWritesAverage(masterReport, b);
+                                    if (sort === "+data-writes-master") return getDataWritesAverage(masterReport, a) - getDataWritesAverage(masterReport, b);
                                     if (sort === "-data-writes-master") return getDataWritesAverage(masterReport, b) - getDataWritesAverage(masterReport, a);
 
                                     return 0;
