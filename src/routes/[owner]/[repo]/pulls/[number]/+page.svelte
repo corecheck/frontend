@@ -398,6 +398,15 @@
                         </h1>
                     </div>
                     <div class="clearfix m-b-base" />
+                    {#if coverage.benchmark_status === "pending"}
+                        <div
+                            class="alert alert-warning"
+                            style="text-align: center"
+                        >
+                            <i class="ri-information-line" /> Benchmarks are
+                            currently being generated, please come back later.
+                        </div>
+                    {:else}
                     <table class="table">
                         <thead>
                             <tr>
@@ -596,6 +605,7 @@
                             {/each}
                         </tbody>
                     </table>
+                    {/if}
                 </div>
             </div>
         {/if}
