@@ -41,33 +41,14 @@
         </nav>
 
         {#key user}
-
-        {#if user && user.login}
-            <figure class="thumb thumb-circle link-hint closable">
-                <img
-                    src={`https://github.com/${user.login}.png?size=200`}
-                    alt="Avatar"
-                />
-                <Toggler
-                    class="dropdown dropdown-nowrap dropdown-upside dropdown-left"
-                >
-                <button on:click={() => window.location.href = "/logout"} class="dropdown-item closable">
-                    <i class="ri-logout-circle-line" />
-                    <span class="txt">Logout</span>
-                </button>
-                </Toggler>
-            </figure>
-        {/if}
-        {#if !user}
-            <a
-                href="/login"
-                class="menu-item"
-                aria-label="Sign in with GitHub"
-                use:tooltip={{ text: "Sign in with GitHub", position: "right" }}
-            >
-                <i style="font-size: 50px; margin-bottom: 10px" class="ri-github-fill" />
-            </a>
-        {/if}
+        <a
+            href="https://github.com/corecheck/corecheck"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="menu-item"
+        >
+            <i style="font-size: 50px; margin-bottom: 10px" class="ri-github-fill" />
+        </a>
         {/key}
     </aside>
 
