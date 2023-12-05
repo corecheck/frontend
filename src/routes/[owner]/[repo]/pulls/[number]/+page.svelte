@@ -538,15 +538,15 @@
                                         class="col-type-number col-field-pr"
                                         class:txt-danger={getDiffMaster(
                                             benchmark,
-                                        ) > 0.05 &&
-                                            getDiffMaster(benchmark) < 0.1}
+                                        ) > 0.06 &&
+                                            getDiffMaster(benchmark)}
                                         class:txt-success={getDiffMaster(
                                             benchmark,
-                                        ) < -0.05}
+                                        ) < -0.06}
                                         class:txt-hint={getDiffMaster(
                                             benchmark,
-                                        ) > -0.05 &&
-                                            getDiffMaster(benchmark) < 0.05}
+                                        ) > -0.06 &&
+                                            getDiffMaster(benchmark) < 0.06}
                                     >
                                         {displayPercentage(
                                             getDiffMaster(benchmark),
