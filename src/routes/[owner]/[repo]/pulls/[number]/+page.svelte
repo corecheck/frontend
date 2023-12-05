@@ -17,14 +17,11 @@
             ? pr.reports.find((r) => r.commit === pr.head) || pr.reports[0]
             : null;
 
-    let masterReport = coverage?.base_report || {}
-    console.log(coverage);
-
     let hasExpanded = {
         coverage: false,
     };
 
-    let sort = "name";
+    let sort = "-diff";
 
     function expandAll(accType: string) {
         const accordionsDiv = document.querySelector(".accordions." + accType);
@@ -78,12 +75,12 @@
             minimumFractionDigits: 2,
             maximumFractionDigits: 2,
         });
-    
+
         if (n > 0) return "+" + r;
         return r;
     }
 
-    function getBenchScore(benchmark) {
+    function getSingleBenchScore(benchmark) {
         const Ir = benchmark.Ir;
         const I1mr = benchmark.I1mr;
         const ILmr = benchmark.ILmr;
@@ -100,6 +97,15 @@
         const l1_hits = total_memory_rw - l3_hits - ram_hits;
 
         return l1_hits + 5 * l3_hits + 35 * ram_hits;
+    }
+
+    function getBenchScore(benchmarks) {
+        let score = 0;
+        for (const b of benchmarks) {
+            score += getSingleBenchScore(b);
+        }
+
+        return score / benchmarks.length;
     }
 
     function getCPUInstructionsAverage(report, name) {
@@ -121,25 +127,16 @@
     }
 
     function getDiffMaster(benchmark) {
-        const masterBenchmark = masterReport.benchmarks_grouped[benchmark];
+        const masterBenchmark =
+            coverage.base_report.benchmarks_grouped[benchmark];
         if (!masterBenchmark) return 0;
 
-        // use reduce
-        let averageScoreMaster = 0;
-        let averageScorePull = 0;
+        const averageScorePull = getBenchScore(
+            coverage.benchmarks_grouped[benchmark],
+        );
+        const averageScoreMaster = getBenchScore(masterBenchmark);
 
-        for (const b of masterBenchmark) {
-            averageScoreMaster += getBenchScore(b);
-        }
-
-        for (const b of coverage.benchmarks_grouped[benchmark]) {
-            averageScorePull += getBenchScore(b);
-        }
-
-        averageScoreMaster /= masterBenchmark.length;
-        averageScorePull /= coverage.benchmarks_grouped[benchmark].length;
-
-        return 1 - averageScoreMaster / averageScorePull;
+        return (averageScorePull - averageScoreMaster) / averageScoreMaster;
     }
 
     const user = getContext("user");
@@ -294,9 +291,7 @@
                     {/key}
                 </div>
                 <div class="cov-col">
-                    <h1>
-                        Sonarcloud
-                    </h1>
+                    <h1>Sonarcloud</h1>
                     <div class="clearfix m-b-base" />
 
                     <div class="accordions sonarcloud">
@@ -385,7 +380,7 @@
             {/if}
         </div>
         <div class="clearfix m-b-base" />
-        {#if masterReport && coverage && coverage.status !== "pending"}
+        {#if coverage.base_report && coverage && coverage.status !== "pending"}
             <div
                 class="cov-container flex flex-justify-between flex-align-start"
             >
@@ -398,213 +393,284 @@
                         </h1>
                     </div>
                     <div class="clearfix m-b-base" />
+                    <p>Benchmarks are executed on ARM64 CPUs using Cachegrind to analyze cache and memory interactions for consistent results.</p>
+                    <p>
+Score is computed by combining Level 1 (L1) cache hits, Level 3 (L3) cache hits multiplied by 5, and RAM hits multiplied by 35, the lower the better.
+                    </p>
+                    <div class="clearfix m-b-base" />
                     {#if coverage.benchmark_status === "pending"}
                         <div
                             class="alert alert-warning"
                             style="text-align: center"
                         >
-                            <i class="ri-information-line" /> Benchmarks are
-                            currently being generated, please come back later.
+                            <i class="ri-information-line" /> Benchmarks are currently
+                            being generated, please come back later.
                         </div>
                     {:else}
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <SortHeader
-                                    class="col-type-url"
-                                    name="name"
-                                    bind:sort
-                                >
-                                    <div class="col-header-content">
-                                        <i class="ri-text" />
-                                        <span class="txt">Name</span>
-                                    </div>
-                                </SortHeader>
-                                <SortHeader
-                                    class="col-type-number col-field-type"
-                                    name="diff"
-                                    bind:sort
-                                >
-                                    <div class="col-header-content">
-                                        <i class="ri-percent-line" />
-                                        <span class="txt">Diff</span>
-                                    </div>
-                                </SortHeader>
-                                <SortHeader
-                                    class="col-type-number col-field-type"
-                                    name="cpu-refs"
-                                    bind:sort
-                                >
-                                    <div class="col-header-content">
-                                        <i class="ri-cpu-line" />
-                                        <span class="txt">CPU refs</span>
-                                    </div>
-                                </SortHeader>
-                                <SortHeader
-                                    class="col-type-number col-field-type"
-                                    name="cpu-refs-master"
-                                    bind:sort
-                                >
-                                    <div class="col-header-content">
-                                        <i class="ri-cpu-line" />
-                                        <span class="txt"
-                                            >CPU refs (master)</span
-                                        >
-                                    </div>
-                                </SortHeader>
-                                <SortHeader
-                                    class="col-type-number col-field-type"
-                                    name="data-reads"
-                                    bind:sort
-                                >
-                                    <div class="col-header-content">
-                                        <i class="ri-database-2-line" />
-                                        <span class="txt">Data reads</span>
-                                    </div>
-                                </SortHeader>
-                                <SortHeader
-                                    class="col-type-number col-field-type"
-                                    name="data-reads-master"
-                                    bind:sort
-                                >
-                                    <div class="col-header-content">
-                                        <i class="ri-database-2-line" />
-                                        <span class="txt"
-                                            >Data reads (master)</span
-                                        >
-                                    </div>
-                                </SortHeader>
-
-                                <SortHeader
-                                    class="col-type-number col-field-type"
-                                    name="data-writes"
-                                    bind:sort
-                                >
-                                    <div class="col-header-content">
-                                        <i class="ri-database-2-line" />
-                                        <span class="txt">Data writes</span>
-                                    </div>
-                                </SortHeader>
-                                <SortHeader
-                                    class="col-type-number col-field-type"
-                                    name="data-writes-master"
-                                    bind:sort
-                                >
-                                    <div class="col-header-content">
-                                        <i class="ri-database-2-line" />
-                                        <span class="txt"
-                                            >Data writes (master)</span
-                                        >
-                                    </div>
-                                </SortHeader>
-                            </tr></thead
-                        >
-
-                        <tbody>
-                            {#each Object.keys(coverage.benchmarks_grouped).sort( (a, b) => {
-                                    const benchA = coverage.benchmarks_grouped[a];
-                                    const benchB = coverage.benchmarks_grouped[b];
-
-                                    if (!benchA || !benchB) return 0;
-
-                                    if (sort === "+name") return a.localeCompare(b);
-                                    if (sort === "-name") return b.localeCompare(a);
-
-                                    if (sort === "+diff") return getDiffMaster(a) - getDiffMaster(b);
-                                    if (sort === "-diff") return getDiffMaster(b) - getDiffMaster(a);
-
-                                    if (sort === "+cpu-refs") return getCPUInstructionsAverage(coverage, a) - getCPUInstructionsAverage(coverage, b);
-                                    if (sort === "-cpu-refs") return getCPUInstructionsAverage(coverage, b) - getCPUInstructionsAverage(coverage, a);
-                                    if (sort === "+cpu-refs-master") return getCPUInstructionsAverage(masterReport, a) - getCPUInstructionsAverage(masterReport, b);
-                                    if (sort === "-cpu-refs-master") return getCPUInstructionsAverage(masterReport, b) - getCPUInstructionsAverage(masterReport, a);
-
-                                    if (sort === "+data-reads") return getDataReadsAverage(coverage, a) - getDataReadsAverage(coverage, b);
-                                    if (sort === "-data-reads") return getDataReadsAverage(coverage, b) - getDataReadsAverage(coverage, a);
-                                    if (sort === "+data-reads-master") return getDataReadsAverage(masterReport, a) - getDataReadsAverage(masterReport, b);
-                                    if (sort === "-data-reads-master") return getDataReadsAverage(masterReport, b) - getDataReadsAverage(masterReport, a);
-
-                                    if (sort === "+data-writes") return getDataWritesAverage(coverage, a) - getDataWritesAverage(coverage, b);
-                                    if (sort === "-data-writes") return getDataWritesAverage(coverage, b) - getDataWritesAverage(coverage, a);
-                                    if (sort === "+data-writes-master") return getDataWritesAverage(masterReport, a) - getDataWritesAverage(masterReport, b);
-                                    if (sort === "-data-writes-master") return getDataWritesAverage(masterReport, b) - getDataWritesAverage(masterReport, a);
-
-                                    return 0;
-                                }, ) as benchmark}
+                        <table class="table">
+                            <thead>
                                 <tr>
-                                    <td class="col-type-url col-field-id">
-                                        <p>{benchmark}</p>
-                                    </td>
-                                    <td
-                                        class="col-type-number col-field-pr"
-                                        class:txt-danger={getDiffMaster(
-                                            benchmark,
-                                        ) > 0.06 &&
-                                            getDiffMaster(benchmark)}
-                                        class:txt-success={getDiffMaster(
-                                            benchmark,
-                                        ) < -0.06}
-                                        class:txt-hint={getDiffMaster(
-                                            benchmark,
-                                        ) > -0.06 &&
-                                            getDiffMaster(benchmark) < 0.06}
+                                    <SortHeader
+                                        class="col-type-url"
+                                        name="name"
+                                        bind:sort
                                     >
-                                        {displayPercentage(
-                                            getDiffMaster(benchmark),
-                                        )}<small style="opacity: 0.5">%</small>
-                                    </td>
-                                    <td class="col-type-number col-field-pr">
-                                        {displayBenchNumber(
-                                            getCPUInstructionsAverage(
-                                                coverage,
-                                                benchmark,
-                                            ),
-                                        )}
-                                    </td>
-                                    <td class="col-type-number col-field-pr">
-                                        {displayBenchNumber(
-                                            getCPUInstructionsAverage(
-                                                masterReport,
-                                                benchmark,
-                                            ),
-                                        )}
-                                    </td>
+                                        <div class="col-header-content">
+                                            <i class="ri-text" />
+                                            <span class="txt">Name</span>
+                                        </div>
+                                    </SortHeader>
+                                    <SortHeader
+                                        class="col-type-number col-field-type"
+                                        name="score"
+                                        bind:sort
+                                    >
+                                        <div
+                                            class="col-header-content"
+                                        >
+                                            <i class="ri-percent-line" />
+                                            <span class="txt">Score</span>
+                                        </div>
+                                    </SortHeader>
+                                    <SortHeader
+                                        class="col-type-number col-field-type"
+                                        name="score-master"
+                                        bind:sort
+                                    >
+                                        <div class="col-header-content">
+                                            <i class="ri-percent-line" />
+                                            <span class="txt">Score master</span
+                                            >
+                                        </div>
+                                    </SortHeader>
+                                    <SortHeader
+                                        class="col-type-number col-field-type"
+                                        name="diff"
+                                        bind:sort
+                                    >
+                                        <div class="col-header-content">
+                                            <i class="ri-percent-line" />
+                                            <span class="txt">Diff score</span>
+                                        </div>
+                                    </SortHeader>
+                                    <SortHeader
+                                        class="col-type-number col-field-type"
+                                        name="cpu-refs"
+                                        bind:sort
+                                    >
+                                        <div class="col-header-content">
+                                            <i class="ri-cpu-line" />
+                                            <span class="txt">CPU refs</span>
+                                        </div>
+                                    </SortHeader>
+                                    <SortHeader
+                                        class="col-type-number col-field-type"
+                                        name="cpu-refs-master"
+                                        bind:sort
+                                    >
+                                        <div class="col-header-content">
+                                            <i class="ri-cpu-line" />
+                                            <span class="txt"
+                                                >CPU refs master</span
+                                            >
+                                        </div>
+                                    </SortHeader>
+                                    <SortHeader
+                                        class="col-type-number col-field-type"
+                                        name="data-reads"
+                                        bind:sort
+                                    >
+                                        <div class="col-header-content">
+                                            <i class="ri-database-2-line" />
+                                            <span class="txt">Data reads</span>
+                                        </div>
+                                    </SortHeader>
+                                    <SortHeader
+                                        class="col-type-number col-field-type"
+                                        name="data-reads-master"
+                                        bind:sort
+                                    >
+                                        <div class="col-header-content">
+                                            <i class="ri-database-2-line" />
+                                            <span class="txt"
+                                                >Data reads master</span
+                                            >
+                                        </div>
+                                    </SortHeader>
 
-                                    <td class="col-type-number col-field-pr">
-                                        {displayBenchNumber(
-                                            getDataReadsAverage(
-                                                coverage,
+                                    <SortHeader
+                                        class="col-type-number col-field-type"
+                                        name="data-writes"
+                                        bind:sort
+                                    >
+                                        <div class="col-header-content">
+                                            <i class="ri-database-2-line" />
+                                            <span class="txt">Data writes</span>
+                                        </div>
+                                    </SortHeader>
+                                    <SortHeader
+                                        class="col-type-number col-field-type"
+                                        name="data-writes-master"
+                                        bind:sort
+                                    >
+                                        <div class="col-header-content">
+                                            <i class="ri-database-2-line" />
+                                            <span class="txt"
+                                                >Data writes master</span
+                                            >
+                                        </div>
+                                    </SortHeader>
+                                </tr></thead
+                            >
+
+                            <tbody>
+                                {#each Object.keys(coverage.benchmarks_grouped).sort( (a, b) => {
+                                        const benchA = coverage.benchmarks_grouped[a];
+                                        const benchB = coverage.benchmarks_grouped[b];
+
+                                        if (!benchA || !benchB) return 0;
+
+                                        if (sort === "+name") return a.localeCompare(b);
+                                        if (sort === "-name") return b.localeCompare(a);
+
+                                        if (sort === "+score") return getBenchScore(benchA) - getBenchScore(benchB);
+                                        if (sort === "-score") return getBenchScore(benchB) - getBenchScore(benchA);
+
+                                        if (sort === "+score-master") return getBenchScore(coverage.base_report.benchmarks_grouped[a]) - getBenchScore(coverage.base_report.benchmarks_grouped[b]);
+                                        if (sort === "-score-master") return getBenchScore(coverage.base_report.benchmarks_grouped[b]) - getBenchScore(coverage.base_report.benchmarks_grouped[a]);
+
+                                        if (sort === "+diff") return getDiffMaster(a) - getDiffMaster(b);
+                                        if (sort === "-diff") return getDiffMaster(b) - getDiffMaster(a);
+
+                                        if (sort === "+cpu-refs") return getCPUInstructionsAverage(coverage, a) - getCPUInstructionsAverage(coverage, b);
+                                        if (sort === "-cpu-refs") return getCPUInstructionsAverage(coverage, b) - getCPUInstructionsAverage(coverage, a);
+                                        if (sort === "+cpu-refs-master") return getCPUInstructionsAverage(coverage.base_report, a) - getCPUInstructionsAverage(coverage.base_report, b);
+                                        if (sort === "-cpu-refs-master") return getCPUInstructionsAverage(coverage.base_report, b) - getCPUInstructionsAverage(coverage.base_report, a);
+
+                                        if (sort === "+data-reads") return getDataReadsAverage(coverage, a) - getDataReadsAverage(coverage, b);
+                                        if (sort === "-data-reads") return getDataReadsAverage(coverage, b) - getDataReadsAverage(coverage, a);
+                                        if (sort === "+data-reads-master") return getDataReadsAverage(coverage.base_report, a) - getDataReadsAverage(coverage.base_report, b);
+                                        if (sort === "-data-reads-master") return getDataReadsAverage(coverage.base_report, b) - getDataReadsAverage(coverage.base_report, a);
+
+                                        if (sort === "+data-writes") return getDataWritesAverage(coverage, a) - getDataWritesAverage(coverage, b);
+                                        if (sort === "-data-writes") return getDataWritesAverage(coverage, b) - getDataWritesAverage(coverage, a);
+                                        if (sort === "+data-writes-master") return getDataWritesAverage(coverage.base_report, a) - getDataWritesAverage(coverage.base_report, b);
+                                        if (sort === "-data-writes-master") return getDataWritesAverage(coverage.base_report, b) - getDataWritesAverage(coverage.base_report, a);
+
+                                        return 0;
+                                    }, ) as benchmark}
+                                    <tr>
+                                        <td class="col-type-url col-field-id">
+                                            <p>{benchmark}</p>
+                                        </td>
+                                        <td
+                                            class="col-type-number col-field-pr"
+                                        >
+                                            {displayBenchNumber(
+                                                getBenchScore(
+                                                    coverage.benchmarks_grouped[
+                                                        benchmark
+                                                    ],
+                                                ) / 1000000,
+                                            )}
+                                        </td>
+                                        <td
+                                            class="col-type-number col-field-pr"
+                                        >
+                                            {displayBenchNumber(
+                                                getBenchScore(
+                                                    coverage.base_report
+                                                        .benchmarks_grouped[
+                                                        benchmark
+                                                    ],
+                                                ) / 1000000,
+                                            )}
+                                        </td>
+                                        <td
+                                            class="col-type-number col-field-pr"
+                                            class:txt-danger={getDiffMaster(
                                                 benchmark,
-                                            ),
-                                        )}
-                                    </td>
-                                    <td class="col-type-number col-field-pr">
-                                        {displayBenchNumber(
-                                            getDataReadsAverage(
-                                                masterReport,
+                                            ) > 0.06 &&
+                                                getDiffMaster(benchmark)}
+                                            class:txt-success={getDiffMaster(
                                                 benchmark,
-                                            ),
-                                        )}
-                                    </td>
-                                    <td class="col-type-number col-field-pr">
-                                        {displayBenchNumber(
-                                            getDataWritesAverage(
-                                                coverage,
+                                            ) < -0.06}
+                                            class:txt-hint={getDiffMaster(
                                                 benchmark,
-                                            ),
-                                        )}
-                                    </td>
-                                    <td class="col-type-number col-field-pr">
-                                        {displayBenchNumber(
-                                            getDataWritesAverage(
-                                                masterReport,
-                                                benchmark,
-                                            ),
-                                        )}
-                                    </td>
-                                </tr>
-                            {/each}
-                        </tbody>
-                    </table>
+                                            ) > -0.06 &&
+                                                getDiffMaster(benchmark) < 0.06}
+                                        >
+                                            {displayPercentage(
+                                                getDiffMaster(benchmark),
+                                            )}<small style="opacity: 0.5"
+                                                >%</small
+                                            >
+                                        </td>
+                                        <td
+                                            class="col-type-number col-field-pr"
+                                        >
+                                            {displayBenchNumber(
+                                                getCPUInstructionsAverage(
+                                                    coverage,
+                                                    benchmark,
+                                                ),
+                                            )}
+                                        </td>
+                                        <td
+                                            class="col-type-number col-field-pr"
+                                        >
+                                            {displayBenchNumber(
+                                                getCPUInstructionsAverage(
+                                                    coverage.base_report,
+                                                    benchmark,
+                                                ),
+                                            )}
+                                        </td>
+
+                                        <td
+                                            class="col-type-number col-field-pr"
+                                        >
+                                            {displayBenchNumber(
+                                                getDataReadsAverage(
+                                                    coverage,
+                                                    benchmark,
+                                                ),
+                                            )}
+                                        </td>
+                                        <td
+                                            class="col-type-number col-field-pr"
+                                        >
+                                            {displayBenchNumber(
+                                                getDataReadsAverage(
+                                                    coverage.base_report,
+                                                    benchmark,
+                                                ),
+                                            )}
+                                        </td>
+                                        <td
+                                            class="col-type-number col-field-pr"
+                                        >
+                                            {displayBenchNumber(
+                                                getDataWritesAverage(
+                                                    coverage,
+                                                    benchmark,
+                                                ),
+                                            )}
+                                        </td>
+                                        <td
+                                            class="col-type-number col-field-pr"
+                                        >
+                                            {displayBenchNumber(
+                                                getDataWritesAverage(
+                                                    coverage.base_report,
+                                                    benchmark,
+                                                ),
+                                            )}
+                                        </td>
+                                    </tr>
+                                {/each}
+                            </tbody>
+                        </table>
                     {/if}
                 </div>
             </div>

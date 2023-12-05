@@ -38,11 +38,13 @@ export async function _fetchSonarCloudIssues(fetch, number) {
 }
 
 export async function _fetchPr(fetch, number) {
-    return fetch(`${env.PUBLIC_ENDPOINT}/pr/${number}`)
+    const pr = await fetch(`${env.PUBLIC_ENDPOINT}/pr/${number}`)
         .then((res) => res.json())
         .catch((err) => {
             console.error(err);
         });
+
+    return pr;
 }
 
 export async function load({ params, fetch }) {
