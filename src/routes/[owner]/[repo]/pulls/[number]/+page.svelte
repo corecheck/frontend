@@ -526,12 +526,17 @@
                                         </td>
                                         <td
                                             class="col-type-number col-field-pr"
-                                            class:txt-danger={benchmark.diff >
-                                                0.06}
-                                            class:txt-success={benchmark.diff <
-                                                -0.06}
-                                            class:txt-hint={benchmark.diff >
-                                                -0.06 && benchmark.diff < 0.06}
+                                            class:txt-danger={coverage.benchmarks_parsed[
+                                                benchmark
+                                            ].diff > 0.06}
+                                            class:txt-success={coverage.benchmarks_parsed[
+                                                benchmark
+                                            ].diff < -0.06}
+                                            class:txt-hint={coverage.benchmarks_parsed[
+                                                benchmark
+                                            ].diff > -0.06 && coverage.benchmarks_parsed[
+                                                benchmark
+                                            ].diff < 0.06}
                                         >
                                             {displayPercentage(
                                                 coverage.benchmarks_parsed[
