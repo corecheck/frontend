@@ -80,65 +80,6 @@
         return r;
     }
 
-    function getSingleBenchScore(benchmark) {
-        const Ir = benchmark.Ir;
-        const I1mr = benchmark.I1mr;
-        const ILmr = benchmark.ILmr;
-        const Dr = benchmark.Dr;
-        const D1mr = benchmark.D1mr;
-        const DLmr = benchmark.DLmr;
-        const Dw = benchmark.Dw;
-        const D1mw = benchmark.D1mw;
-        const DLmw = benchmark.DLmw;
-
-        const ram_hits = DLmr + DLmw + ILmr;
-        const l3_hits = I1mr + D1mw + D1mr - ram_hits;
-        const total_memory_rw = Ir + Dr + Dw;
-        const l1_hits = total_memory_rw - l3_hits - ram_hits;
-
-        return l1_hits + 5 * l3_hits + 35 * ram_hits;
-    }
-
-    function getBenchScore(benchmarks) {
-        let score = 0;
-        for (const b of benchmarks) {
-            score += getSingleBenchScore(b);
-        }
-
-        return score / benchmarks.length;
-    }
-
-    function getCPUInstructionsAverage(report, name) {
-        const benchmark = report.benchmarks_grouped[name];
-        if (!benchmark) return 0;
-        return benchmark.reduce((acc, b) => acc + b.Ir, 0) / benchmark.length;
-    }
-
-    function getDataReadsAverage(report, name) {
-        const benchmark = report.benchmarks_grouped[name];
-        if (!benchmark) return 0;
-        return benchmark.reduce((acc, b) => acc + b.Dr, 0) / benchmark.length;
-    }
-
-    function getDataWritesAverage(report, name) {
-        const benchmark = report.benchmarks_grouped[name];
-        if (!benchmark) return 0;
-        return benchmark.reduce((acc, b) => acc + b.Dw, 0) / benchmark.length;
-    }
-
-    function getDiffMaster(benchmark) {
-        const masterBenchmark =
-            coverage.base_report.benchmarks_grouped[benchmark];
-        if (!masterBenchmark) return 0;
-
-        const averageScorePull = getBenchScore(
-            coverage.benchmarks_grouped[benchmark],
-        );
-        const averageScoreMaster = getBenchScore(masterBenchmark);
-
-        return (averageScorePull - averageScoreMaster) / averageScoreMaster;
-    }
-
     const user = getContext("user");
 </script>
 
@@ -393,9 +334,15 @@
                         </h1>
                     </div>
                     <div class="clearfix m-b-base" />
-                    <p>Benchmarks are executed on ARM64 CPUs using Cachegrind to analyze cache and memory interactions for consistent results.</p>
                     <p>
-Score is computed by combining Level 1 (L1) cache hits, Level 3 (L3) cache hits multiplied by 5, and RAM hits multiplied by 35, the lower the better.
+                        Benchmarks are executed on ARM64 CPUs using Cachegrind
+                        to analyze cache and memory interactions for consistent
+                        results.
+                    </p>
+                    <p>
+                        Score is computed by combining Level 1 (L1) cache hits,
+                        Level 3 (L3) cache hits multiplied by 5, and RAM hits
+                        multiplied by 35, the lower the better.
                     </p>
                     <div class="clearfix m-b-base" />
                     {#if coverage.benchmark_status === "pending"}
@@ -425,9 +372,7 @@ Score is computed by combining Level 1 (L1) cache hits, Level 3 (L3) cache hits 
                                         name="score"
                                         bind:sort
                                     >
-                                        <div
-                                            class="col-header-content"
-                                        >
+                                        <div class="col-header-content">
                                             <i class="ri-percent-line" />
                                             <span class="txt">Score</span>
                                         </div>
@@ -524,38 +469,36 @@ Score is computed by combining Level 1 (L1) cache hits, Level 3 (L3) cache hits 
                             >
 
                             <tbody>
-                                {#each Object.keys(coverage.benchmarks_grouped).sort( (a, b) => {
-                                        const benchA = coverage.benchmarks_grouped[a];
-                                        const benchB = coverage.benchmarks_grouped[b];
+                                {#each Object.keys(coverage.benchmarks_parsed).sort( (a, b) => {
+                                        const benchA = coverage.benchmarks_parsed[a];
+                                        const benchB = coverage.benchmarks_parsed[b];
 
-                                        if (!benchA || !benchB) return 0;
+                                        if (sort === "+name") return benchA.name.localeCompare(benchB.name);
+                                        if (sort === "-name") return benchB.name.localeCompare(benchA.name);
 
-                                        if (sort === "+name") return a.localeCompare(b);
-                                        if (sort === "-name") return b.localeCompare(a);
+                                        if (sort === "+score") return benchA.score - benchB.score;
+                                        if (sort === "-score") return benchB.score - benchA.score;
 
-                                        if (sort === "+score") return getBenchScore(benchA) - getBenchScore(benchB);
-                                        if (sort === "-score") return getBenchScore(benchB) - getBenchScore(benchA);
+                                        if (sort === "+score-master") return benchA.base.score - benchB.base.score;
+                                        if (sort === "-score-master") return benchB.base.score - benchA.base.score;
 
-                                        if (sort === "+score-master") return getBenchScore(coverage.base_report.benchmarks_grouped[a]) - getBenchScore(coverage.base_report.benchmarks_grouped[b]);
-                                        if (sort === "-score-master") return getBenchScore(coverage.base_report.benchmarks_grouped[b]) - getBenchScore(coverage.base_report.benchmarks_grouped[a]);
+                                        if (sort === "+diff") return benchA.diff - benchB.diff;
+                                        if (sort === "-diff") return benchB.diff - benchA.diff;
 
-                                        if (sort === "+diff") return getDiffMaster(a) - getDiffMaster(b);
-                                        if (sort === "-diff") return getDiffMaster(b) - getDiffMaster(a);
+                                        if (sort === "+cpu-refs") return benchA.Ir - benchB.Ir;
+                                        if (sort === "-cpu-refs") return benchB.Ir - benchA.Ir;
+                                        if (sort === "+cpu-refs-master") return benchA.base.Ir - benchB.base.Ir;
+                                        if (sort === "-cpu-refs-master") return benchB.base.Ir - benchA.base.Ir;
 
-                                        if (sort === "+cpu-refs") return getCPUInstructionsAverage(coverage, a) - getCPUInstructionsAverage(coverage, b);
-                                        if (sort === "-cpu-refs") return getCPUInstructionsAverage(coverage, b) - getCPUInstructionsAverage(coverage, a);
-                                        if (sort === "+cpu-refs-master") return getCPUInstructionsAverage(coverage.base_report, a) - getCPUInstructionsAverage(coverage.base_report, b);
-                                        if (sort === "-cpu-refs-master") return getCPUInstructionsAverage(coverage.base_report, b) - getCPUInstructionsAverage(coverage.base_report, a);
+                                        if (sort === "+data-reads") return benchA.Dr - benchB.Dr;
+                                        if (sort === "-data-reads") return benchB.Dr - benchA.Dr;
+                                        if (sort === "+data-reads-master") return benchA.base.Dr - benchB.base.Dr;
+                                        if (sort === "-data-reads-master") return benchB.base.Dr - benchA.base.Dr;
 
-                                        if (sort === "+data-reads") return getDataReadsAverage(coverage, a) - getDataReadsAverage(coverage, b);
-                                        if (sort === "-data-reads") return getDataReadsAverage(coverage, b) - getDataReadsAverage(coverage, a);
-                                        if (sort === "+data-reads-master") return getDataReadsAverage(coverage.base_report, a) - getDataReadsAverage(coverage.base_report, b);
-                                        if (sort === "-data-reads-master") return getDataReadsAverage(coverage.base_report, b) - getDataReadsAverage(coverage.base_report, a);
-
-                                        if (sort === "+data-writes") return getDataWritesAverage(coverage, a) - getDataWritesAverage(coverage, b);
-                                        if (sort === "-data-writes") return getDataWritesAverage(coverage, b) - getDataWritesAverage(coverage, a);
-                                        if (sort === "+data-writes-master") return getDataWritesAverage(coverage.base_report, a) - getDataWritesAverage(coverage.base_report, b);
-                                        if (sort === "-data-writes-master") return getDataWritesAverage(coverage.base_report, b) - getDataWritesAverage(coverage.base_report, a);
+                                        if (sort === "+data-writes") return benchA.Dw - benchB.Dw;
+                                        if (sort === "-data-writes") return benchB.Dw - benchA.Dw;
+                                        if (sort === "+data-writes-master") return benchA.base.Dw - benchB.base.Dw;
+                                        if (sort === "-data-writes-master") return benchB.base.Dw - benchA.base.Dw;
 
                                         return 0;
                                     }, ) as benchmark}
@@ -567,41 +510,33 @@ Score is computed by combining Level 1 (L1) cache hits, Level 3 (L3) cache hits 
                                             class="col-type-number col-field-pr"
                                         >
                                             {displayBenchNumber(
-                                                getBenchScore(
-                                                    coverage.benchmarks_grouped[
-                                                        benchmark
-                                                    ],
-                                                ) / 1000000,
+                                                coverage.benchmarks_parsed[
+                                                    benchmark
+                                                ].score / 1000000,
                                             )}
                                         </td>
                                         <td
                                             class="col-type-number col-field-pr"
                                         >
                                             {displayBenchNumber(
-                                                getBenchScore(
-                                                    coverage.base_report
-                                                        .benchmarks_grouped[
-                                                        benchmark
-                                                    ],
-                                                ) / 1000000,
+                                                coverage.benchmarks_parsed[
+                                                    benchmark
+                                                ].base.score / 1000000,
                                             )}
                                         </td>
                                         <td
                                             class="col-type-number col-field-pr"
-                                            class:txt-danger={getDiffMaster(
-                                                benchmark,
-                                            ) > 0.06 &&
-                                                getDiffMaster(benchmark)}
-                                            class:txt-success={getDiffMaster(
-                                                benchmark,
-                                            ) < -0.06}
-                                            class:txt-hint={getDiffMaster(
-                                                benchmark,
-                                            ) > -0.06 &&
-                                                getDiffMaster(benchmark) < 0.06}
+                                            class:txt-danger={benchmark.diff >
+                                                0.06}
+                                            class:txt-success={benchmark.diff <
+                                                -0.06}
+                                            class:txt-hint={benchmark.diff >
+                                                -0.06 && benchmark.diff < 0.06}
                                         >
                                             {displayPercentage(
-                                                getDiffMaster(benchmark),
+                                                coverage.benchmarks_parsed[
+                                                    benchmark
+                                                ].diff,
                                             )}<small style="opacity: 0.5"
                                                 >%</small
                                             >
@@ -610,20 +545,18 @@ Score is computed by combining Level 1 (L1) cache hits, Level 3 (L3) cache hits 
                                             class="col-type-number col-field-pr"
                                         >
                                             {displayBenchNumber(
-                                                getCPUInstructionsAverage(
-                                                    coverage,
-                                                    benchmark,
-                                                ),
+                                                coverage.benchmarks_parsed[
+                                                    benchmark
+                                                ].Ir,
                                             )}
                                         </td>
                                         <td
                                             class="col-type-number col-field-pr"
                                         >
                                             {displayBenchNumber(
-                                                getCPUInstructionsAverage(
-                                                    coverage.base_report,
-                                                    benchmark,
-                                                ),
+                                                coverage.benchmarks_parsed[
+                                                    benchmark
+                                                ].base.Ir,
                                             )}
                                         </td>
 
@@ -631,40 +564,36 @@ Score is computed by combining Level 1 (L1) cache hits, Level 3 (L3) cache hits 
                                             class="col-type-number col-field-pr"
                                         >
                                             {displayBenchNumber(
-                                                getDataReadsAverage(
-                                                    coverage,
-                                                    benchmark,
-                                                ),
+                                                coverage.benchmarks_parsed[
+                                                    benchmark
+                                                ].Dr,
                                             )}
                                         </td>
                                         <td
                                             class="col-type-number col-field-pr"
                                         >
                                             {displayBenchNumber(
-                                                getDataReadsAverage(
-                                                    coverage.base_report,
-                                                    benchmark,
-                                                ),
+                                                coverage.benchmarks_parsed[
+                                                    benchmark
+                                                ].base.Dr,
                                             )}
                                         </td>
                                         <td
                                             class="col-type-number col-field-pr"
                                         >
                                             {displayBenchNumber(
-                                                getDataWritesAverage(
-                                                    coverage,
-                                                    benchmark,
-                                                ),
+                                                coverage.benchmarks_parsed[
+                                                    benchmark
+                                                ].Dw,
                                             )}
                                         </td>
                                         <td
                                             class="col-type-number col-field-pr"
                                         >
                                             {displayBenchNumber(
-                                                getDataWritesAverage(
-                                                    coverage.base_report,
-                                                    benchmark,
-                                                ),
+                                                coverage.benchmarks_parsed[
+                                                    benchmark
+                                                ].base.Dw,
                                             )}
                                         </td>
                                     </tr>
