@@ -57,6 +57,7 @@ function getSingleBenchScore(benchmark) {
 }
 
 function getBenchScore(benchmarks) {
+    if (!benchmarks) return 0;
     let score = 0;
     for (const b of benchmarks) {
         score += getSingleBenchScore(b);
