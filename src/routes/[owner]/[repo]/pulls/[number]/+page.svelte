@@ -321,7 +321,7 @@
             {/if}
         </div>
         <div class="clearfix m-b-base" />
-        {#if coverage.base_report && coverage && coverage.status !== "pending"}
+        {#if coverage && coverage.base_report && coverage.status !== "pending"}
             <div
                 class="cov-container flex flex-justify-between flex-align-start"
             >
