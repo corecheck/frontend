@@ -99,7 +99,7 @@ function getDiffMaster(report, benchmark) {
 }
 
 export async function _fetchPr(fetch, number) {
-    const pr = await fetch(`${env.PUBLIC_ENDPOINT}/pr/${number}`)
+    const pr = await fetch(`${env.PUBLIC_ENDPOINT}/pulls/${number}`)
         .then((res) => res.json())
         .catch((err) => {
             console.error(err);
