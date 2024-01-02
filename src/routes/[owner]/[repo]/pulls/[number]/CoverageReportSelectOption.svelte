@@ -6,7 +6,4 @@
     export let item;
 </script>
 
-<!-- x ago -->
 <span class="dropdown-item-text">{item.commit.substring(0, 7)} - {dayjs().to(dayjs(item.created_at))} {item.status === "pending" ? "(PENDING)" : ""}</span>
-
-
