@@ -1,9 +1,9 @@
 import { env } from '$env/dynamic/public'
 import { _fetchReport } from '@/lib/shared/report';
 
-export async function _fetchSonarCloudIssues(fetch, number) {
+export async function _fetchSonarCloudIssues(fetch, number, commit) {
     // https://sonarcloud.io/api/issues/search?metricKeys=sqale_index&projects=aureleoules_bitcoin&types=CODE_SMELL&branch=26415
-    return fetch(`https://sonarcloud.io/api/issues/search?metricKeys=sqale_index&resolved=false&projects=aureleoules_bitcoin&types=CODE_SMELL&branch=${number}`)
+    return fetch(`https://sonarcloud.io/api/issues/search?metricKeys=sqale_index&resolved=false&projects=aureleoules_bitcoin&types=CODE_SMELL&branch=${number}-${commit}`)
         .then(async res => {
             if (res.status === 200) {
                 const data = await res.json();
@@ -47,11 +47,11 @@ export async function _fetchPr(fetch, number) {
 }
 
 export async function load({ params, fetch }) {
-    const [pr, report, sonarcloud] = await Promise.all([
+    const [pr, report] = await Promise.all([
         _fetchPr(fetch, params.number),
         _fetchReport(fetch, env.PUBLIC_ENDPOINT, params.number),
-        _fetchSonarCloudIssues(fetch, params.number)
     ]);
+    const sonarcloud = await _fetchSonarCloudIssues(fetch, params.number, report.commit);
 
     return {
         pr,

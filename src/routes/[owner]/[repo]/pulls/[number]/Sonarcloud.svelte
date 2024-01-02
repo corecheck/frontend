@@ -2,6 +2,7 @@
     import Accordion from "@/components/base/Accordion.svelte";
     import { page } from "$app/stores";
 
+    export let report: any;
     export let issues: any = [];
 
 </script>
@@ -60,8 +61,7 @@
                 <!-- https://sonarcloud.io/project/issues?&sinceLeakPeriod=true&branch=26415&id=aureleoules_bitcoin&open=AYsFGxvQ890w8U3JDlEV -->
                 <a
                     class="btn btn-primary btn-sm"
-                    href="https://sonarcloud.io/project/issues?id=aureleoules_bitcoin&branch={$page
-                        .params.number}&resolved=false&open={issue.key}"
+                    href="https://sonarcloud.io/project/issues?id=aureleoules_bitcoin&branch={report.pr_number}-{report.commit}&resolved=false&open={issue.key}"
                     target="_blank">Open in SonarCloud</a
                 >
             </div>

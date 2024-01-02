@@ -140,7 +140,7 @@
         </div>
 
         <div class="cov-col">
-            <Sonarcloud issues={sonarcloud.issues} />
+            <Sonarcloud report={report} issues={sonarcloud.issues} />
         </div>
         {#if report && report.status === "pending"}
             <div class="alert alert-warning" style="text-align: center">
