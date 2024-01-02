@@ -47,12 +47,15 @@ export async function _fetchPr(fetch, number) {
 }
 
 export async function load({ params, fetch }) {
-    const [pr, report] = await Promise.all([
-        _fetchPr(fetch, params.number),
-        _fetchReport(fetch, env.PUBLIC_ENDPOINT, params.number),
-    ]);
-    const sonarcloud = await _fetchSonarCloudIssues(fetch, params.number, report.commit);
+    const pr = await _fetchPr(fetch, params.number);
 
+    let report, sonarcloud;
+    try {
+        report = await _fetchReport(fetch, env.PUBLIC_ENDPOINT, params.number);
+        sonarcloud = await _fetchSonarCloudIssues(fetch, params.number, report.commit);
+    } catch (e) {
+        console.error(e);
+    }
     return {
         pr,
         report,
