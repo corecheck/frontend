@@ -49,7 +49,7 @@
                         >
 {#each issue.sources as line}<div class="line"><span
                                     class="line-number txt-mono"
-                                    >{line.line}</span
+                                    >{line.line} </span
                                 ><span
                                     class="txt-mono"
                                     class:highlight={line.line >=
