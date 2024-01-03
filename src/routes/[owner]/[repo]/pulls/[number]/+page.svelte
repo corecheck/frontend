@@ -79,100 +79,110 @@
             </Field>
         </div>
         <div class="clearfix m-b-base" />
-        {#if report?.coverage}
-            <div
-                class="flex cov-container flex-justify-between flex-align-start bg-grey"
-            >
-                <div class="cov-col">
-                    <Coverage
-                        name="Uncovered new code"
-                        description="Lines of code added in this pull request that are not covered by tests."
-                        coverage={report.coverage.uncovered_new_code}
-                        icon="ri-alert-line"
-                        color="txt-danger"
-                    />
-                </div>
-                <div class="cov-col">
-                    <Coverage
-                        name="Covered new code"
-                        description="Lines of code added in this pull request that are covered by tests."
-                        coverage={report.coverage.gained_coverage_new_code}
-                        icon="ri-check-line"
-                        color="txt-success"
-                    />
-                </div>
-            </div>
-            <div
-                class="flex cov-container flex-justify-between flex-align-start"
-            >
-                <div class="cov-col">
-                    <Coverage
-                        name="Lost baseline coverage"
-                        description="Lines of code that were covered by tests in master but are not covered anymore in this pull request."
-                        coverage={report.coverage.lost_baseline_coverage}
-                        icon="ri-alert-line"
-                        color="txt-danger"
-                    />
-                </div>
-                <div class="cov-col">
-                    <Coverage
-                        name="Gained baseline coverage"
-                        description="Lines of code that were not covered by tests in master but are covered in this pull request."
-                        coverage={report.coverage.gained_baseline_coverage}
-                        icon="ri-check-line"
-                        color="txt-success"
-                    />
-                </div>
-            </div>
-            <div
-                class="flex cov-container flex-justify-between flex-align-start bg-grey"
-            >
-                <div class="cov-col">
-                    <Coverage
-                        name="Uncovered included code"
-                        description="Lines of code that were not executed in master but are executed in this pull request and are not covered by tests."
-                        coverage={report.coverage.uncovered_included_code}
-                        icon="ri-alert-line"
-                        color="txt-danger"
-                    />
-                </div>
-                <div class="cov-col">
-                    <Coverage
-                        name="Covered included code"
-                        description="Lines of code that were not executed in master but are executed in this pull request and are covered by tests."
-                        coverage={report.coverage.gained_coverage_included_code}
-                        icon="ri-check-line"
-                        color="txt-success"
-                    />
-                </div>
-            </div>
-        {/if}
 
-        {#if sonarcloud}
-            <div class="cov-col">
-                <Sonarcloud {report} issues={sonarcloud.issues} />
-            </div>
-        {/if}
-        {#if report && report.status === "pending"}
-            <div class="alert alert-warning" style="text-align: center">
-                <i class="ri-information-line" /> Coverage report is currently
-                being generated, please come back later.
-            </div>
-        {/if}
         {#if !report}
             <div class="alert alert-info" style="text-align: center">
                 <i class="ri-information-line" /> No coverage data available.
             </div>
         {/if}
-        <div class="clearfix m-b-base" />
-        {#if report && report.base_report && report.status !== "pending"}
-            <div
-                class="cov-container flex flex-justify-between flex-align-start"
-            >
-                <div class="cov-col full-width">
-                    <Benchmarks {report} />
-                </div>
+        {#if report && report.status === "pending"}
+            <div class="alert alert-warning" style="text-align: center">
+                <i class="ri-information-line" /> Coverage report is currently being
+                generated, please come back later.
             </div>
+        {/if}
+        {#if report && report.status === "failure"}
+            <div class="alert alert-danger" style="text-align: center">
+                <i class="ri-information-line" /> An error occured while generating
+                the coverage report.
+            </div>
+        {/if}
+        {#if report && report.status === "success"}
+            {#if report?.coverage}
+                <div
+                    class="flex cov-container flex-justify-between flex-align-start bg-grey"
+                >
+                    <div class="cov-col">
+                        <Coverage
+                            name="Uncovered new code"
+                            description="Lines of code added in this pull request that are not covered by tests."
+                            coverage={report.coverage.uncovered_new_code}
+                            icon="ri-alert-line"
+                            color="txt-danger"
+                        />
+                    </div>
+                    <div class="cov-col">
+                        <Coverage
+                            name="Covered new code"
+                            description="Lines of code added in this pull request that are covered by tests."
+                            coverage={report.coverage.gained_coverage_new_code}
+                            icon="ri-check-line"
+                            color="txt-success"
+                        />
+                    </div>
+                </div>
+                <div
+                    class="flex cov-container flex-justify-between flex-align-start"
+                >
+                    <div class="cov-col">
+                        <Coverage
+                            name="Lost baseline coverage"
+                            description="Lines of code that were covered by tests in master but are not covered anymore in this pull request."
+                            coverage={report.coverage.lost_baseline_coverage}
+                            icon="ri-alert-line"
+                            color="txt-danger"
+                        />
+                    </div>
+                    <div class="cov-col">
+                        <Coverage
+                            name="Gained baseline coverage"
+                            description="Lines of code that were not covered by tests in master but are covered in this pull request."
+                            coverage={report.coverage.gained_baseline_coverage}
+                            icon="ri-check-line"
+                            color="txt-success"
+                        />
+                    </div>
+                </div>
+                <div
+                    class="flex cov-container flex-justify-between flex-align-start bg-grey"
+                >
+                    <div class="cov-col">
+                        <Coverage
+                            name="Uncovered included code"
+                            description="Lines of code that were not executed in master but are executed in this pull request and are not covered by tests."
+                            coverage={report.coverage.uncovered_included_code}
+                            icon="ri-alert-line"
+                            color="txt-danger"
+                        />
+                    </div>
+                    <div class="cov-col">
+                        <Coverage
+                            name="Covered included code"
+                            description="Lines of code that were not executed in master but are executed in this pull request and are covered by tests."
+                            coverage={report.coverage
+                                .gained_coverage_included_code}
+                            icon="ri-check-line"
+                            color="txt-success"
+                        />
+                    </div>
+                </div>
+            {/if}
+
+            {#if sonarcloud}
+                <div class="cov-col">
+                    <Sonarcloud {report} issues={sonarcloud.issues} />
+                </div>
+            {/if}
+            <div class="clearfix m-b-base" />
+            {#if report && report.base_report && report.benchmark_status !== "pending"}
+                <div
+                    class="cov-container flex flex-justify-between flex-align-start"
+                >
+                    <div class="cov-col full-width">
+                        <Benchmarks {report} />
+                    </div>
+                </div>
+            {/if}
         {/if}
         <div class="clearfix m-b-base" />
     </main>
