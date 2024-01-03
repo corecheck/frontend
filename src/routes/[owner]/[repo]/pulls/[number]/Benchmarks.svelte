@@ -5,7 +5,7 @@
     export let report: any;
 
     function displayBenchNumber(n, showSign = false) {
-        if(!n) return 0;
+        if (!n) return 0;
         return Math.round(n).toLocaleString("en-US", {
             minimumFractionDigits: 0,
             maximumFractionDigits: 0,
@@ -22,6 +22,7 @@
         return r;
     }
 </script>
+
 <div class="flex">
     <h1>
         Benchmarks <span class="label label-success">Beta</span>
@@ -42,7 +43,11 @@
         <i class="ri-information-line" /> Benchmarks are currently being generated,
         please come back later.
     </div>
-{:else}
+{:else if report.benchmark_status === "failure"}
+    <div class="alert alert-danger" style="text-align: center">
+        <i class="ri-information-line" /> An error occured while generating the benchmarks.
+    </div>
+{:else if report.benchmark_status === "success"}
     <table class="table">
         <thead>
             <tr>

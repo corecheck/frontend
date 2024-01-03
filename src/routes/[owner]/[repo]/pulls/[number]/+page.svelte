@@ -174,15 +174,9 @@
                 </div>
             {/if}
             <div class="clearfix m-b-base" />
-            {#if report && report.base_report && report.benchmark_status !== "pending"}
-                <div
-                    class="cov-container flex flex-justify-between flex-align-start"
-                >
-                    <div class="cov-col full-width">
-                        <Benchmarks {report} />
-                    </div>
-                </div>
-            {/if}
+            <div class="cov-col full-width">
+                <Benchmarks {report} />
+            </div>
         {/if}
         <div class="clearfix m-b-base" />
     </main>
