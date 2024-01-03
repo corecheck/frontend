@@ -73,4 +73,29 @@
     .highlight {
         background-color: #e97373;
     }
+    .full-width {
+        width: 100% !important;
+    }
+
+    .code {
+        background-color: #f1f1f1;
+        padding: 1rem;
+        border-radius: 0.25rem;
+        margin-bottom: 1rem;
+        overflow: auto;
+    }
+
+    .line {
+        display: flex;
+        align-items: center;
+    }
+    .line-number {
+        text-align: right;
+        margin-right: 0.5rem;
+        border-right: 1px solid #d0d5db;
+    }
+
+    :global(pre code.hljs) {
+        white-space: pre-wrap;
+    }
 </style>

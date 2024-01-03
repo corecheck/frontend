@@ -14,6 +14,7 @@
     const pageTitle = "Pull requests";
     export let data;
     let { pr, sonarcloud, report } = data;
+    console.log(report);
 
     let selectedReport = pr.reports[0];
     let prev = selectedReport;

@@ -52,6 +52,7 @@ export async function load({ params, fetch }) {
     let report, sonarcloud;
     try {
         report = await _fetchReport(fetch, env.PUBLIC_ENDPOINT, params.number);
+        console.log(report);
         sonarcloud = await _fetchSonarCloudIssues(fetch, params.number, report.commit);
     } catch (e) {
         console.error(e);

@@ -5,6 +5,7 @@
     export let report: any;
 
     function displayBenchNumber(n, showSign = false) {
+        if(!n) return 0;
         return Math.round(n).toLocaleString("en-US", {
             minimumFractionDigits: 0,
             maximumFractionDigits: 0,
@@ -215,7 +216,7 @@
                     </td>
                     <td class="col-type-number col-field-pr">
                         {displayBenchNumber(
-                            report.benchmarks_parsed[benchmark].base.Ir,
+                            report.benchmarks_parsed[benchmark].base?.Ir,
                         )}
                     </td>
 
@@ -226,7 +227,7 @@
                     </td>
                     <td class="col-type-number col-field-pr">
                         {displayBenchNumber(
-                            report.benchmarks_parsed[benchmark].base.Dr,
+                            report.benchmarks_parsed[benchmark].base?.Dr,
                         )}
                     </td>
                     <td class="col-type-number col-field-pr">
@@ -236,7 +237,7 @@
                     </td>
                     <td class="col-type-number col-field-pr">
                         {displayBenchNumber(
-                            report.benchmarks_parsed[benchmark].base.Dw,
+                            report.benchmarks_parsed[benchmark].base?.Dw,
                         )}
                     </td>
                 </tr>
