@@ -196,6 +196,10 @@
     <div class="alert alert-danger" style="text-align: center">
         <i class="ri-information-line" /> An error occured while generating the benchmarks. Push a new commit to re-run the benchmarks.
     </div>
+{:else if report.benchmark_status === "not_found"}
+    <div class="alert alert-info" style="text-align: center">
+        <i class="ri-information-line" /> No benchmarks available. Push a new commit to re-run the benchmarks.
+    </div>
 {:else if report.benchmark_status === "success"}
     <Field class="form-field form-field-toggle" name="verified" let:uniqueId>
         <input
