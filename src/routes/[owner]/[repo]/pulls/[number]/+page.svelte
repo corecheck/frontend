@@ -5,10 +5,9 @@
     import tooltip from "../../../../../actions/tooltip";
     import Select from "@/components/base/Select.svelte";
     import CoverageReportSelectOption from "./CoverageReportSelectOption.svelte";
-    import SortHeader from "@/components/base/SortHeader.svelte";
     import Coverage from "./Coverage.svelte";
     import { env } from "$env/dynamic/public";
-    import { _fetchReport } from "@/lib/shared/report";
+    import { _fetchReport, _fetchSonarCloudIssues } from "@/lib/shared/report";
     import Sonarcloud from "./Sonarcloud.svelte";
     import Benchmarks from "./Benchmarks.svelte";
     const pageTitle = "Pull requests";
@@ -32,6 +31,8 @@
                     pr.number,
                     selectedReport.id,
                 );
+
+                sonarcloud = await await _fetchSonarCloudIssues(fetch, report.pr_number, report.commit);
                 fetching = false;
             }
         })();
