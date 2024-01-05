@@ -8,6 +8,7 @@
 
     export let report: any;
     let showOnlySignificant = true;
+    const threshold = 0.10;
 
     function displayBenchNumber(n, showSign = false) {
         if (!n) return 0;
@@ -171,12 +172,12 @@
 
     function isSignificant(benchmark) {
         return (
-            Math.abs(getNsPerUnitDiff(benchmark)) > 0.06 ||
-            Math.abs(getUnitPerSecondDiff(benchmark)) > 0.06 ||
-            Math.abs(getInstructionsPerUnitDiff(benchmark)) > 0.06 ||
-            Math.abs(getCyclesPerUnitDiff(benchmark)) > 0.06 ||
-            Math.abs(getIPCDiff(benchmark)) > 0.06 ||
-            Math.abs(getBranchesPerUnitDiff(benchmark)) > 0.06
+            Math.abs(getNsPerUnitDiff(benchmark)) > threshold ||
+            Math.abs(getUnitPerSecondDiff(benchmark)) > threshold ||
+            Math.abs(getInstructionsPerUnitDiff(benchmark)) > threshold ||
+            Math.abs(getCyclesPerUnitDiff(benchmark)) > threshold ||
+            Math.abs(getIPCDiff(benchmark)) > threshold ||
+            Math.abs(getBranchesPerUnitDiff(benchmark)) > threshold
         );
     }
 </script>
@@ -345,12 +346,12 @@
                             >
                             <small
                                 class:txt-success={getNsPerUnitDiff(benchmark) <
-                                    -0.06}
+                                    -threshold}
                                 class:txt-danger={getNsPerUnitDiff(benchmark) >
-                                    0.06}
+                                    threshold}
                                 class:txt-hint={getNsPerUnitDiff(benchmark) >=
-                                    -0.06 &&
-                                    getNsPerUnitDiff(benchmark) <= 0.06}
+                                    -threshold &&
+                                    getNsPerUnitDiff(benchmark) <= threshold}
                             >
                                 {displayPercentage(
                                     getNsPerUnitDiff(benchmark),
@@ -374,14 +375,14 @@
                             <small
                                 class:txt-success={getUnitPerSecondDiff(
                                     benchmark,
-                                ) > 0.06}
+                                ) > threshold}
                                 class:txt-danger={getUnitPerSecondDiff(
                                     benchmark,
-                                ) < -0.06}
+                                ) < -threshold}
                                 class:txt-hint={getUnitPerSecondDiff(
                                     benchmark,
-                                ) <= 0.06 &&
-                                    getUnitPerSecondDiff(benchmark) >= -0.06}
+                                ) <= threshold &&
+                                    getUnitPerSecondDiff(benchmark) >= -threshold}
                             >
                                 {displayPercentage(
                                     getUnitPerSecondDiff(benchmark),
@@ -407,15 +408,15 @@
                             <small
                                 class:txt-success={getInstructionsPerUnitDiff(
                                     benchmark,
-                                ) < -0.06}
+                                ) < -threshold}
                                 class:txt-danger={getInstructionsPerUnitDiff(
                                     benchmark,
-                                ) > 0.06}
+                                ) > threshold}
                                 class:txt-hint={getInstructionsPerUnitDiff(
                                     benchmark,
-                                ) >= -0.06 &&
+                                ) >= -threshold &&
                                     getInstructionsPerUnitDiff(benchmark) <=
-                                        0.06}
+                                        threshold}
                             >
                                 {displayPercentage(
                                     getInstructionsPerUnitDiff(benchmark),
@@ -439,14 +440,14 @@
                             <small
                                 class:txt-success={getCyclesPerUnitDiff(
                                     benchmark,
-                                ) < -0.06}
+                                ) < -threshold}
                                 class:txt-danger={getCyclesPerUnitDiff(
                                     benchmark,
-                                ) > 0.06}
+                                ) > threshold}
                                 class:txt-hint={getCyclesPerUnitDiff(
                                     benchmark,
-                                ) >= -0.06 &&
-                                    getCyclesPerUnitDiff(benchmark) <= 0.06}
+                                ) >= -threshold &&
+                                    getCyclesPerUnitDiff(benchmark) <= threshold}
                             >
                                 {displayPercentage(
                                     getCyclesPerUnitDiff(benchmark),
@@ -472,10 +473,10 @@
                             })}
                             <small class="txt-hint">IPC</small>
                             <small
-                                class:txt-danger={getIPCDiff(benchmark) < -0.06}
-                                class:txt-success={getIPCDiff(benchmark) > 0.06}
+                                class:txt-danger={getIPCDiff(benchmark) < -threshold}
+                                class:txt-success={getIPCDiff(benchmark) > threshold}
                                 class:txt-hint={getIPCDiff(benchmark) >=
-                                    -0.06 && getIPCDiff(benchmark) <= 0.06}
+                                    -threshold && getIPCDiff(benchmark) <= threshold}
                             >
                                 {displayPercentage(getIPCDiff(benchmark))}%
                             </small>
