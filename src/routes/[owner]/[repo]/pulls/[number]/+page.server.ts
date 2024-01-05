@@ -2,14 +2,10 @@ import { env } from '$env/dynamic/public'
 import { _fetchReport } from '@/lib/shared/report';
 
 export async function _fetchSonarCloudIssues(fetch, number, commit) {
-    // https://sonarcloud.io/api/issues/search?metricKeys=sqale_index&projects=aureleoules_bitcoin&types=CODE_SMELL&branch=26415
     return fetch(`https://sonarcloud.io/api/issues/search?metricKeys=sqale_index&resolved=false&projects=aureleoules_bitcoin&types=CODE_SMELL&branch=${number}-${commit}`)
         .then(async res => {
             if (res.status === 200) {
                 const data = await res.json();
-
-                // https://sonarcloud.io/api/sources/issue_snippets?issueKey=AYsFGxvQ890w8U3JDlEV
-                // fetch for each issue the source code, with Promise.all
 
                 const promises = data.issues.map(issue => {
                     return fetch(`https://sonarcloud.io/api/sources/issue_snippets?issueKey=${issue.key}`)

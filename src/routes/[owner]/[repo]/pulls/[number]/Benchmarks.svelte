@@ -1,8 +1,13 @@
 <script lang="ts">
+    import tooltip from "@/actions/tooltip";
+    import Accordion from "@/components/base/Accordion.svelte";
+    import Field from "@/components/base/Field.svelte";
     import SortHeader from "@/components/base/SortHeader.svelte";
+    import Toggler from "@/components/base/Toggler.svelte";
     let sort = "-diff";
 
     export let report: any;
+    let showOnlySignificant = true;
 
     function displayBenchNumber(n, showSign = false) {
         if (!n) return 0;
@@ -21,6 +26,159 @@
         if (n > 0) return "+" + r;
         return r;
     }
+
+    function getUnit(benchmark) {
+        return report.benchmarks_grouped[benchmark]["unit"];
+    }
+
+    function getNsPerUnit(benchmark) {
+        return (
+            report.benchmarks_grouped[benchmark]["median(elapsed)"] /
+            (0.000000001 * report.benchmarks_grouped[benchmark]["batch"])
+        );
+    }
+
+    function getNsPerUnitMaster(benchmark) {
+        return (
+            report.base_report.benchmarks_grouped[benchmark][
+                "median(elapsed)"
+            ] /
+            (0.000000001 *
+                report.base_report.benchmarks_grouped[benchmark]["batch"])
+        );
+    }
+
+    function getNsPerUnitDiff(benchmark) {
+        return (
+            (getNsPerUnit(benchmark) - getNsPerUnitMaster(benchmark)) /
+            getNsPerUnitMaster(benchmark)
+        );
+    }
+
+    function getUnitPerSecond(benchmark) {
+        return (
+            report.benchmarks_grouped[benchmark]["batch"] /
+            report.benchmarks_grouped[benchmark]["median(elapsed)"]
+        );
+    }
+
+    function getUnitPerSecondMaster(benchmark) {
+        return (
+            report.base_report.benchmarks_grouped[benchmark]["batch"] /
+            report.base_report.benchmarks_grouped[benchmark]["median(elapsed)"]
+        );
+    }
+
+    function getUnitPerSecondDiff(benchmark) {
+        return (
+            (getUnitPerSecond(benchmark) - getUnitPerSecondMaster(benchmark)) /
+            getUnitPerSecondMaster(benchmark)
+        );
+    }
+
+    function getIPC(benchmark) {
+        return (
+            report.benchmarks_grouped[benchmark]["median(instructions)"] /
+            report.benchmarks_grouped[benchmark]["median(cpucycles)"]
+        );
+    }
+
+    function getIPCMaster(benchmark) {
+        return (
+            report.base_report.benchmarks_grouped[benchmark][
+                "median(instructions)"
+            ] /
+            report.base_report.benchmarks_grouped[benchmark][
+                "median(cpucycles)"
+            ]
+        );
+    }
+
+    function getIPCDiff(benchmark) {
+        return (
+            (getIPC(benchmark) - getIPCMaster(benchmark)) /
+            getIPCMaster(benchmark)
+        );
+    }
+
+    function getCyclesPerUnit(benchmark) {
+        return (
+            report.benchmarks_grouped[benchmark]["median(cpucycles)"] /
+            report.benchmarks_grouped[benchmark]["batch"]
+        );
+    }
+
+    function getCyclesPerUnitMaster(benchmark) {
+        return (
+            report.base_report.benchmarks_grouped[benchmark][
+                "median(cpucycles)"
+            ] / report.base_report.benchmarks_grouped[benchmark]["batch"]
+        );
+    }
+
+    function getCyclesPerUnitDiff(benchmark) {
+        return (
+            (getCyclesPerUnit(benchmark) - getCyclesPerUnitMaster(benchmark)) /
+            getCyclesPerUnitMaster(benchmark)
+        );
+    }
+
+    function getInstructionsPerUnit(benchmark) {
+        return (
+            report.benchmarks_grouped[benchmark]["median(instructions)"] /
+            report.benchmarks_grouped[benchmark]["batch"]
+        );
+    }
+
+    function getInstructionsPerUnitMaster(benchmark) {
+        return (
+            report.base_report.benchmarks_grouped[benchmark][
+                "median(instructions)"
+            ] / report.base_report.benchmarks_grouped[benchmark]["batch"]
+        );
+    }
+
+    function getInstructionsPerUnitDiff(benchmark) {
+        return (
+            (getInstructionsPerUnit(benchmark) -
+                getInstructionsPerUnitMaster(benchmark)) /
+            getInstructionsPerUnitMaster(benchmark)
+        );
+    }
+
+    function getBranchesPerUnit(benchmark) {
+        return (
+            report.benchmarks_grouped[benchmark]["median(branchinstructions)"] /
+            report.benchmarks_grouped[benchmark]["batch"]
+        );
+    }
+
+    function getBranchesPerUnitMaster(benchmark) {
+        return (
+            report.base_report.benchmarks_grouped[benchmark][
+                "median(branchinstructions)"
+            ] / report.base_report.benchmarks_grouped[benchmark]["batch"]
+        );
+    }
+
+    function getBranchesPerUnitDiff(benchmark) {
+        return (
+            (getBranchesPerUnit(benchmark) -
+                getBranchesPerUnitMaster(benchmark)) /
+            getBranchesPerUnitMaster(benchmark)
+        );
+    }
+
+    function isSignificant(benchmark) {
+        return (
+            Math.abs(getNsPerUnitDiff(benchmark)) > 0.06 ||
+            Math.abs(getUnitPerSecondDiff(benchmark)) > 0.06 ||
+            Math.abs(getInstructionsPerUnitDiff(benchmark)) > 0.06 ||
+            Math.abs(getCyclesPerUnitDiff(benchmark)) > 0.06 ||
+            Math.abs(getIPCDiff(benchmark)) > 0.06 ||
+            Math.abs(getBranchesPerUnitDiff(benchmark)) > 0.06
+        );
+    }
 </script>
 
 <div class="flex">
@@ -29,15 +187,6 @@
     </h1>
 </div>
 <div class="clearfix m-b-base" />
-<p>
-    Benchmarks are executed on ARM64 CPUs using Cachegrind to analyze cache and
-    memory interactions for consistent results.
-</p>
-<p>
-    Score is computed by combining Level 1 (L1) cache hits, Level 3 (L3) cache
-    hits multiplied by 5, and RAM hits multiplied by 35, the lower the better.
-</p>
-<div class="clearfix m-b-base" />
 {#if report.benchmark_status === "pending"}
     <div class="alert alert-warning" style="text-align: center">
         <i class="ri-information-line" /> Benchmarks are currently being generated,
@@ -45,13 +194,23 @@
     </div>
 {:else if report.benchmark_status === "failure"}
     <div class="alert alert-danger" style="text-align: center">
-        <i class="ri-information-line" /> An error occured while generating the benchmarks.
+        <i class="ri-information-line" /> An error occured while generating the benchmarks. Push a new commit to re-run the benchmarks.
     </div>
 {:else if report.benchmark_status === "success"}
+    <Field class="form-field form-field-toggle" name="verified" let:uniqueId>
+        <input
+            type="checkbox"
+            id={uniqueId}
+            bind:checked={showOnlySignificant}
+        />
+        <label for={uniqueId}
+            >Only show benchmarks with a significant difference</label
+        >
+    </Field>
     <table class="table">
         <thead>
             <tr>
-                <SortHeader class="col-type-url" name="name" bind:sort>
+                <SortHeader name="name" bind:sort>
                     <div class="col-header-content">
                         <i class="ri-text" />
                         <span class="txt">Name</span>
@@ -59,191 +218,285 @@
                 </SortHeader>
                 <SortHeader
                     class="col-type-number col-field-type"
-                    name="score"
+                    name="ns/unit"
                     bind:sort
                 >
                     <div class="col-header-content">
                         <i class="ri-percent-line" />
-                        <span class="txt">Score</span>
+                        <span class="txt">ns/unit</span>
                     </div>
                 </SortHeader>
                 <SortHeader
                     class="col-type-number col-field-type"
-                    name="score-master"
+                    name="unit/s"
                     bind:sort
                 >
                     <div class="col-header-content">
                         <i class="ri-percent-line" />
-                        <span class="txt">Score master</span>
+                        <span class="txt">unit/s</span>
                     </div>
                 </SortHeader>
                 <SortHeader
                     class="col-type-number col-field-type"
-                    name="diff"
-                    bind:sort
-                >
-                    <div class="col-header-content">
-                        <i class="ri-percent-line" />
-                        <span class="txt">Diff score</span>
-                    </div>
-                </SortHeader>
-                <SortHeader
-                    class="col-type-number col-field-type"
-                    name="cpu-refs"
+                    name="ins/unit"
                     bind:sort
                 >
                     <div class="col-header-content">
                         <i class="ri-cpu-line" />
-                        <span class="txt">CPU refs</span>
+                        <span class="txt">ins/unit</span>
                     </div>
                 </SortHeader>
                 <SortHeader
                     class="col-type-number col-field-type"
-                    name="cpu-refs-master"
-                    bind:sort
-                >
-                    <div class="col-header-content">
-                        <i class="ri-cpu-line" />
-                        <span class="txt">CPU refs master</span>
-                    </div>
-                </SortHeader>
-                <SortHeader
-                    class="col-type-number col-field-type"
-                    name="data-reads"
+                    name="cyc/unit"
                     bind:sort
                 >
                     <div class="col-header-content">
                         <i class="ri-database-2-line" />
-                        <span class="txt">Data reads</span>
+                        <span class="txt">cyc/unit</span>
                     </div>
                 </SortHeader>
                 <SortHeader
                     class="col-type-number col-field-type"
-                    name="data-reads-master"
+                    name="ipc"
                     bind:sort
                 >
                     <div class="col-header-content">
                         <i class="ri-database-2-line" />
-                        <span class="txt">Data reads master</span>
-                    </div>
-                </SortHeader>
-
-                <SortHeader
-                    class="col-type-number col-field-type"
-                    name="data-writes"
-                    bind:sort
-                >
-                    <div class="col-header-content">
-                        <i class="ri-database-2-line" />
-                        <span class="txt">Data writes</span>
+                        <span class="txt">IPC</span>
                     </div>
                 </SortHeader>
                 <SortHeader
                     class="col-type-number col-field-type"
-                    name="data-writes-master"
+                    name="totalTime"
                     bind:sort
                 >
                     <div class="col-header-content">
-                        <i class="ri-database-2-line" />
-                        <span class="txt">Data writes master</span>
+                        <i class="ri-time-line" />
+                        <span class="txt">Total time</span>
                     </div>
                 </SortHeader>
             </tr></thead
         >
 
         <tbody>
-            {#each Object.keys(report.benchmarks_parsed).sort((a, b) => {
-                const benchA = report.benchmarks_parsed[a];
-                const benchB = report.benchmarks_parsed[b];
+            {#each Object.keys(report.benchmarks_grouped)
+                .sort((a, b) => {
+                    const benchA = report.benchmarks_grouped[a];
+                    const benchB = report.benchmarks_grouped[b];
 
-                if (sort === "+name") return benchA.name.localeCompare(benchB.name);
-                if (sort === "-name") return benchB.name.localeCompare(benchA.name);
+                    if (sort === "+name") return benchA.name.localeCompare(benchB.name);
+                    if (sort === "-name") return benchB.name.localeCompare(benchA.name);
 
-                if (sort === "+score") return benchA.score - benchB.score;
-                if (sort === "-score") return benchB.score - benchA.score;
+                    if (sort === "+ns/unit") return getNsPerUnit(a) - getNsPerUnit(b);
+                    if (sort === "-ns/unit") return getNsPerUnit(b) - getNsPerUnit(a);
 
-                if (sort === "+score-master") return benchA.base.score - benchB.base.score;
-                if (sort === "-score-master") return benchB.base.score - benchA.base.score;
+                    if (sort === "+unit/s") return getUnitPerSecond(a) - getUnitPerSecond(b);
+                    if (sort === "-unit/s") return getUnitPerSecond(b) - getUnitPerSecond(a);
 
-                if (sort === "+diff") return benchA.diff - benchB.diff;
-                if (sort === "-diff") return benchB.diff - benchA.diff;
+                    if (sort === "+ins/unit") return getInstructionsPerUnit(a) - getInstructionsPerUnit(b);
+                    if (sort === "-ins/unit") return getInstructionsPerUnit(b) - getInstructionsPerUnit(a);
 
-                if (sort === "+cpu-refs") return benchA.Ir - benchB.Ir;
-                if (sort === "-cpu-refs") return benchB.Ir - benchA.Ir;
-                if (sort === "+cpu-refs-master") return benchA.base.Ir - benchB.base.Ir;
-                if (sort === "-cpu-refs-master") return benchB.base.Ir - benchA.base.Ir;
+                    if (sort === "+cyc/unit") return getCyclesPerUnit(a) - getCyclesPerUnit(b);
+                    if (sort === "-cyc/unit") return getCyclesPerUnit(b) - getCyclesPerUnit(a);
 
-                if (sort === "+data-reads") return benchA.Dr - benchB.Dr;
-                if (sort === "-data-reads") return benchB.Dr - benchA.Dr;
-                if (sort === "+data-reads-master") return benchA.base.Dr - benchB.base.Dr;
-                if (sort === "-data-reads-master") return benchB.base.Dr - benchA.base.Dr;
+                    if (sort === "+ipc") return getIPC(a) - getIPC(b);
+                    if (sort === "-ipc") return getIPC(b) - getIPC(a);
 
-                if (sort === "+data-writes") return benchA.Dw - benchB.Dw;
-                if (sort === "-data-writes") return benchB.Dw - benchA.Dw;
-                if (sort === "+data-writes-master") return benchA.base.Dw - benchB.base.Dw;
-                if (sort === "-data-writes-master") return benchB.base.Dw - benchA.base.Dw;
+                    if (sort === "+bra/unit") return getBranchesPerUnit(a) - getBranchesPerUnit(b);
+                    if (sort === "-bra/unit") return getBranchesPerUnit(b) - getBranchesPerUnit(a);
 
-                return 0;
-            }) as benchmark}
+                    return 0;
+                })
+                .filter((b) => !["AddrManSelectFromAlmostEmpty"].includes(b))
+                .filter((b) => !showOnlySignificant || isSignificant(b)) as benchmark}
                 <tr>
-                    <td class="col-type-url col-field-id">
-                        <p>{benchmark}</p>
+                    <td class="col-field-id">
+                        <p
+                            use:tooltip={report.benchmarks_grouped[benchmark]
+                                .name.length > 50
+                                ? report.benchmarks_grouped[benchmark].name
+                                : ""}
+                        >
+                            {report.benchmarks_grouped[benchmark].name.length >
+                            50
+                                ? report.benchmarks_grouped[
+                                      benchmark
+                                  ].name.substring(0, 50) + "..."
+                                : report.benchmarks_grouped[benchmark].name}
+                        </p>
                     </td>
                     <td class="col-type-number col-field-pr">
-                        {displayBenchNumber(
-                            report.benchmarks_parsed[benchmark].score / 1000000,
-                        )}
+                        <p
+                            use:tooltip={{
+                                text: `master: ${displayBenchNumber(
+                                    getNsPerUnitMaster(benchmark),
+                                )}`,
+                                position: "left",
+                            }}
+                        >
+                            {displayBenchNumber(getNsPerUnit(benchmark))}
+                            <small class="txt-hint"
+                                >ns/{getUnit(benchmark)}</small
+                            >
+                            <small
+                                class:txt-success={getNsPerUnitDiff(benchmark) <
+                                    -0.06}
+                                class:txt-danger={getNsPerUnitDiff(benchmark) >
+                                    0.06}
+                                class:txt-hint={getNsPerUnitDiff(benchmark) >=
+                                    -0.06 &&
+                                    getNsPerUnitDiff(benchmark) <= 0.06}
+                            >
+                                {displayPercentage(
+                                    getNsPerUnitDiff(benchmark),
+                                )}%
+                            </small>
+                        </p>
                     </td>
                     <td class="col-type-number col-field-pr">
-                        {displayBenchNumber(
-                            report.benchmarks_parsed[benchmark].base.score /
-                                1000000,
-                        )}
-                    </td>
-                    <td
-                        class="col-type-number col-field-pr"
-                        class:txt-danger={report.benchmarks_parsed[benchmark]
-                            .diff > 0.06}
-                        class:txt-success={report.benchmarks_parsed[benchmark]
-                            .diff < -0.06}
-                        class:txt-hint={report.benchmarks_parsed[benchmark]
-                            .diff > -0.06 &&
-                            report.benchmarks_parsed[benchmark].diff < 0.06}
-                    >
-                        {displayPercentage(
-                            report.benchmarks_parsed[benchmark].diff,
-                        )}<small style="opacity: 0.5">%</small>
-                    </td>
-                    <td class="col-type-number col-field-pr">
-                        {displayBenchNumber(
-                            report.benchmarks_parsed[benchmark].Ir,
-                        )}
-                    </td>
-                    <td class="col-type-number col-field-pr">
-                        {displayBenchNumber(
-                            report.benchmarks_parsed[benchmark].base?.Ir,
-                        )}
-                    </td>
-
-                    <td class="col-type-number col-field-pr">
-                        {displayBenchNumber(
-                            report.benchmarks_parsed[benchmark].Dr,
-                        )}
+                        <p
+                            use:tooltip={{
+                                text: `master: ${displayBenchNumber(
+                                    getUnitPerSecondMaster(benchmark),
+                                )}`,
+                                position: "left",
+                            }}
+                        >
+                            {displayBenchNumber(getUnitPerSecond(benchmark))}
+                            <small class="txt-hint"
+                                >{getUnit(benchmark)}/s</small
+                            >
+                            <small
+                                class:txt-success={getUnitPerSecondDiff(
+                                    benchmark,
+                                ) > 0.06}
+                                class:txt-danger={getUnitPerSecondDiff(
+                                    benchmark,
+                                ) < -0.06}
+                                class:txt-hint={getUnitPerSecondDiff(
+                                    benchmark,
+                                ) <= 0.06 &&
+                                    getUnitPerSecondDiff(benchmark) >= -0.06}
+                            >
+                                {displayPercentage(
+                                    getUnitPerSecondDiff(benchmark),
+                                )}%
+                            </small>
+                        </p>
                     </td>
                     <td class="col-type-number col-field-pr">
-                        {displayBenchNumber(
-                            report.benchmarks_parsed[benchmark].base?.Dr,
-                        )}
+                        <p
+                            use:tooltip={{
+                                text: `master: ${displayBenchNumber(
+                                    getInstructionsPerUnitMaster(benchmark),
+                                )}`,
+                                position: "left",
+                            }}
+                        >
+                            {displayBenchNumber(
+                                getInstructionsPerUnit(benchmark),
+                            )}
+                            <small class="txt-hint"
+                                >ins/{getUnit(benchmark)}</small
+                            >
+                            <small
+                                class:txt-success={getInstructionsPerUnitDiff(
+                                    benchmark,
+                                ) < -0.06}
+                                class:txt-danger={getInstructionsPerUnitDiff(
+                                    benchmark,
+                                ) > 0.06}
+                                class:txt-hint={getInstructionsPerUnitDiff(
+                                    benchmark,
+                                ) >= -0.06 &&
+                                    getInstructionsPerUnitDiff(benchmark) <=
+                                        0.06}
+                            >
+                                {displayPercentage(
+                                    getInstructionsPerUnitDiff(benchmark),
+                                )}%
+                            </small>
+                        </p>
                     </td>
                     <td class="col-type-number col-field-pr">
-                        {displayBenchNumber(
-                            report.benchmarks_parsed[benchmark].Dw,
-                        )}
+                        <p
+                            use:tooltip={{
+                                text: `master: ${displayBenchNumber(
+                                    getCyclesPerUnitMaster(benchmark),
+                                )}`,
+                                position: "left",
+                            }}
+                        >
+                            {displayBenchNumber(getCyclesPerUnit(benchmark))}
+                            <small class="txt-hint"
+                                >cyc/{getUnit(benchmark)}</small
+                            >
+                            <small
+                                class:txt-success={getCyclesPerUnitDiff(
+                                    benchmark,
+                                ) < -0.06}
+                                class:txt-danger={getCyclesPerUnitDiff(
+                                    benchmark,
+                                ) > 0.06}
+                                class:txt-hint={getCyclesPerUnitDiff(
+                                    benchmark,
+                                ) >= -0.06 &&
+                                    getCyclesPerUnitDiff(benchmark) <= 0.06}
+                            >
+                                {displayPercentage(
+                                    getCyclesPerUnitDiff(benchmark),
+                                )}%
+                            </small>
+                        </p>
                     </td>
                     <td class="col-type-number col-field-pr">
-                        {displayBenchNumber(
-                            report.benchmarks_parsed[benchmark].base?.Dw,
-                        )}
+                        <p
+                            use:tooltip={{
+                                text: `master: ${getIPCMaster(
+                                    benchmark,
+                                ).toLocaleString("en-US", {
+                                    minimumFractionDigits: 2,
+                                    maximumFractionDigits: 2,
+                                })}`,
+                                position: "left",
+                            }}
+                        >
+                            {getIPC(benchmark).toLocaleString("en-US", {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2,
+                            })}
+                            <small class="txt-hint">IPC</small>
+                            <small
+                                class:txt-danger={getIPCDiff(benchmark) < -0.06}
+                                class:txt-success={getIPCDiff(benchmark) > 0.06}
+                                class:txt-hint={getIPCDiff(benchmark) >=
+                                    -0.06 && getIPCDiff(benchmark) <= 0.06}
+                            >
+                                {displayPercentage(getIPCDiff(benchmark))}%
+                            </small>
+                        </p>
+                    </td>
+                    <td class="col-type-number col-field-pr">
+                        <p
+                            use:tooltip={{
+                                text: `master: ${report.base_report.benchmarks_grouped[
+                                    benchmark
+                                ]["totalTime"].toLocaleString("en-US", {
+                                    minimumFractionDigits: 2,
+                                    maximumFractionDigits: 2,
+                                })}`,
+                                position: "left",
+                            }}
+                        >
+                            {report.benchmarks_grouped[benchmark][
+                                "totalTime"
+                            ].toLocaleString("en-US", {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2,
+                            })}
+                            <small class="txt-hint">seconds</small>
+                        </p>
                     </td>
                 </tr>
             {/each}
