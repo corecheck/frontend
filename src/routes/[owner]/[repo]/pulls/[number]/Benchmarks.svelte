@@ -29,10 +29,12 @@
     }
 
     function getUnit(benchmark) {
+        if (!report.benchmarks_grouped[benchmark]) return "";
         return report.benchmarks_grouped[benchmark]["unit"];
     }
 
     function getNsPerUnit(benchmark) {
+        if (!report.benchmarks_grouped[benchmark]) return 0;
         return (
             report.benchmarks_grouped[benchmark]["median(elapsed)"] /
             (0.000000001 * report.benchmarks_grouped[benchmark]["batch"])
@@ -40,6 +42,7 @@
     }
 
     function getNsPerUnitMaster(benchmark) {
+        if (!report.base_report.benchmarks_grouped[benchmark]) return 0;
         return (
             report.base_report.benchmarks_grouped[benchmark][
                 "median(elapsed)"
@@ -50,6 +53,7 @@
     }
 
     function getNsPerUnitDiff(benchmark) {
+        if (!report.base_report.benchmarks_grouped[benchmark]) return 0;
         return (
             (getNsPerUnit(benchmark) - getNsPerUnitMaster(benchmark)) /
             getNsPerUnitMaster(benchmark)
@@ -57,6 +61,7 @@
     }
 
     function getUnitPerSecond(benchmark) {
+        if (!report.benchmarks_grouped[benchmark]) return 0;
         return (
             report.benchmarks_grouped[benchmark]["batch"] /
             report.benchmarks_grouped[benchmark]["median(elapsed)"]
@@ -64,6 +69,7 @@
     }
 
     function getUnitPerSecondMaster(benchmark) {
+        if (!report.base_report.benchmarks_grouped[benchmark]) return 0;
         return (
             report.base_report.benchmarks_grouped[benchmark]["batch"] /
             report.base_report.benchmarks_grouped[benchmark]["median(elapsed)"]
@@ -71,6 +77,7 @@
     }
 
     function getUnitPerSecondDiff(benchmark) {
+        if (!report.base_report.benchmarks_grouped[benchmark]) return 0;
         return (
             (getUnitPerSecond(benchmark) - getUnitPerSecondMaster(benchmark)) /
             getUnitPerSecondMaster(benchmark)
@@ -78,6 +85,7 @@
     }
 
     function getIPC(benchmark) {
+        if (!report.benchmarks_grouped[benchmark]) return 0;
         return (
             report.benchmarks_grouped[benchmark]["median(instructions)"] /
             report.benchmarks_grouped[benchmark]["median(cpucycles)"]
@@ -85,6 +93,7 @@
     }
 
     function getIPCMaster(benchmark) {
+        if (!report.base_report.benchmarks_grouped[benchmark]) return 0;
         return (
             report.base_report.benchmarks_grouped[benchmark][
                 "median(instructions)"
@@ -96,6 +105,7 @@
     }
 
     function getIPCDiff(benchmark) {
+        if (!report.base_report.benchmarks_grouped[benchmark]) return 0;
         return (
             (getIPC(benchmark) - getIPCMaster(benchmark)) /
             getIPCMaster(benchmark)
@@ -103,6 +113,7 @@
     }
 
     function getCyclesPerUnit(benchmark) {
+        if (!report.benchmarks_grouped[benchmark]) return 0;
         return (
             report.benchmarks_grouped[benchmark]["median(cpucycles)"] /
             report.benchmarks_grouped[benchmark]["batch"]
@@ -110,6 +121,7 @@
     }
 
     function getCyclesPerUnitMaster(benchmark) {
+        if (!report.base_report.benchmarks_grouped[benchmark]) return 0;
         return (
             report.base_report.benchmarks_grouped[benchmark][
                 "median(cpucycles)"
@@ -118,6 +130,7 @@
     }
 
     function getCyclesPerUnitDiff(benchmark) {
+        if (!report.base_report.benchmarks_grouped[benchmark]) return 0;
         return (
             (getCyclesPerUnit(benchmark) - getCyclesPerUnitMaster(benchmark)) /
             getCyclesPerUnitMaster(benchmark)
@@ -125,6 +138,7 @@
     }
 
     function getInstructionsPerUnit(benchmark) {
+        if (!report.benchmarks_grouped[benchmark]) return 0;
         return (
             report.benchmarks_grouped[benchmark]["median(instructions)"] /
             report.benchmarks_grouped[benchmark]["batch"]
@@ -132,6 +146,7 @@
     }
 
     function getInstructionsPerUnitMaster(benchmark) {
+        if (!report.base_report.benchmarks_grouped[benchmark]) return 0;
         return (
             report.base_report.benchmarks_grouped[benchmark][
                 "median(instructions)"
@@ -140,6 +155,7 @@
     }
 
     function getInstructionsPerUnitDiff(benchmark) {
+        if (!report.base_report.benchmarks_grouped[benchmark]) return 0;
         return (
             (getInstructionsPerUnit(benchmark) -
                 getInstructionsPerUnitMaster(benchmark)) /
@@ -148,6 +164,7 @@
     }
 
     function getBranchesPerUnit(benchmark) {
+        if (!report.benchmarks_grouped[benchmark]) return 0;
         return (
             report.benchmarks_grouped[benchmark]["median(branchinstructions)"] /
             report.benchmarks_grouped[benchmark]["batch"]
@@ -155,6 +172,7 @@
     }
 
     function getBranchesPerUnitMaster(benchmark) {
+        if (!report.base_report.benchmarks_grouped[benchmark]) return 0;
         return (
             report.base_report.benchmarks_grouped[benchmark][
                 "median(branchinstructions)"
