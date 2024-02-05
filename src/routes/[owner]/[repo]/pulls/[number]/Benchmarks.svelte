@@ -331,7 +331,7 @@
 
                     return 0;
                 })
-                .filter((b) => !["AddrManSelectFromAlmostEmpty", "RollingBloomReset"].includes(b))
+                .filter((b) => !["AddrManSelectFromAlmostEmpty", "RollingBloomReset", "AddrManGetAddr"].includes(b))
                 .filter((b) => !showOnlySignificant || isSignificant(b)) as benchmark}
                 <tr>
                     <td class="col-field-id">
