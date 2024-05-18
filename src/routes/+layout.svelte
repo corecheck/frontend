@@ -39,6 +39,34 @@
                 />
             </a>
             <a
+                href="/tests"
+                class="menu-item"
+                aria-label="Tests"
+                class:active={$page.url.pathname.includes("/tests")}
+                use:tooltip={{ text: "Tests", position: "right" }}
+            >
+                <img
+                    style="text-align: center"
+                    height="25"
+                    alt="jobs"
+                    src="/icons/svg/ci.svg"
+                />
+            </a>
+            <a
+                href="/benchmarks"
+                class="menu-item"
+                aria-label="Benchmarks"
+                class:active={$page.url.pathname.includes("/benchmarks")}
+                use:tooltip={{ text: "Benchmarks", position: "right" }}
+            >
+                <img
+                    style="text-align: center"
+                    height="25"
+                    alt="jobs"
+                    src="/icons/svg/stats.svg"
+                />
+            </a>
+            <a
                 href="/jobs"
                 class="menu-item"
                 aria-label="Jobs"
