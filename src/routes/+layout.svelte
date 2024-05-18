@@ -14,7 +14,7 @@
 
 <div class="app-layout">
     <aside class="app-sidebar">
-        <a href="/" class="logo logo-sm">
+        <a data-sveltekit-preload-code="eager" href="/" class="logo logo-sm">
             <img
                 src="{import.meta.env.BASE_URL}images/logo.png"
                 alt="Bitcoin Core Coverage"
@@ -23,7 +23,7 @@
             />
         </a>
 
-        <nav class="main-menu">
+        <nav data-sveltekit-preload-data="hover" class="main-menu">
             <a
                 href="/bitcoin/bitcoin/pulls"
                 class="menu-item"
@@ -39,6 +39,7 @@
                 />
             </a>
             <a
+                data-sveltekit-preload-code="eager"
                 href="/tests"
                 class="menu-item"
                 aria-label="Tests"
@@ -53,6 +54,7 @@
                 />
             </a>
             <a
+                data-sveltekit-preload-code="eager"
                 href="/benchmarks"
                 class="menu-item"
                 aria-label="Benchmarks"
@@ -67,6 +69,7 @@
                 />
             </a>
             <a
+                data-sveltekit-preload-code="eager"
                 href="/jobs"
                 class="menu-item"
                 aria-label="Jobs"
