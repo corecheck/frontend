@@ -38,6 +38,20 @@
                     src="/icons/svg/pull-request.svg"
                 />
             </a>
+            <a
+                href="/jobs"
+                class="menu-item"
+                aria-label="Jobs"
+                class:active={$page.url.pathname.includes("/jobs")}
+                use:tooltip={{ text: "Jobs", position: "right" }}
+            >
+                <img
+                    style="text-align: center"
+                    height="25"
+                    alt="jobs"
+                    src="/icons/svg/activity.svg"
+                />
+            </a>
         </nav>
 
         {#key user}
